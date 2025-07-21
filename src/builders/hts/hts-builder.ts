@@ -609,16 +609,13 @@ export class HtsBuilder extends BaseServiceBuilder {
    * @throws {Error}
    */
   public mintNonFungibleToken(params: MintNFTParams): this {
+    const metadata = params.metadata.map((m) => {
+      return Buffer.from(m, 'utf8');
+    })
+
     const transaction = new TokenMintTransaction()
       .setTokenId(params.tokenId)
-      .setMetadata(
-        params.metadata.map((m) => {
-          if (typeof m === 'string') {
-            return Buffer.from(m, 'utf8');
-          }
-          return m;
-        })
-      );
+      .setMetadata(metadata);
     this.setCurrentTransaction(transaction);
     return this;
   }
@@ -644,17 +641,25 @@ export class HtsBuilder extends BaseServiceBuilder {
    * @returns {this}
    */
   public transferNft(params: TransferNFTParams): this {
+
+    const serialNum =
+      typeof params.serial === 'string'
+        ? Long.fromString(params.serial)
+        : params.serial;
+
+    const nftId = new NftId(TokenId.fromString(params.tokenId), serialNum);
+
     let transaction: TransferTransaction = new TransferTransaction();
 
     if (!params.isApproved) {
       transaction = transaction.addNftTransfer(
-        params.nftId,
+        nftId,
         params.senderAccountId,
         params.receiverAccountId
       );
     } else {
       transaction = transaction.addApprovedNftTransfer(
-        params.nftId,
+        nftId,
         params.senderAccountId,
         params.receiverAccountId
       );

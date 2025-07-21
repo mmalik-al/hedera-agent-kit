@@ -84,7 +84,7 @@ export abstract class AbstractSigner {
    * Initializes the HederaMirrorNode instance for the signer.
    * Concrete classes must call this in their constructor.
    * @param {HederaNetworkType} network - The network for the mirror node.
-   * @param {string} moduleName - A descriptive name for the logger module (e.g., 'ServerSigner', 'BrowserSigner').
+   * @param {string} moduleName - A descriptive name for the logger module (e.g., 'ServerSigner').
    */
   protected initializeMirrorNode(
     network: HederaNetworkType,

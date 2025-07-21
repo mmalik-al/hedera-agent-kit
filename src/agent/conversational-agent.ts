@@ -449,4 +449,8 @@ export class HederaConversationalAgent {
     this.tokenUsageHandler.reset();
     this.logger.info('Token usage tracking has been reset');
   }
+
+  public getKit(): HederaAgentKit {
+    return this.hederaKit;
+  }
 }

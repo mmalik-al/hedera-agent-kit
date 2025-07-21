@@ -4,8 +4,9 @@ import {
   BaseHederaTransactionTool,
   BaseHederaTransactionToolParams,
 } from '../common/base-hedera-transaction-tool';
-import { BaseServiceBuilder } from '../../../builders/base-service-builder';
-import { HtsBuilder } from '../../../builders/hts/hts-builder';
+import { BaseServiceBuilder } from '../../../builders';
+import { HtsBuilder } from '../../../builders';
+import { Buffer } from "buffer";
 
 const MintNFTZodSchemaCore = z.object({
   tokenId: z

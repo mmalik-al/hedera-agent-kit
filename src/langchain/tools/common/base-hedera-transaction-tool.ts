@@ -502,12 +502,12 @@ export abstract class BaseHederaTransactionTool<
       const builder = this.getServiceBuilder();
       builder.clearNotes();
 
+      await this.callBuilderMethod(builder, specificCallArgs, runManager);
       await this._applyMetaOptions(
         builder,
         llmProvidedMetaOptions,
         specificCallArgs
       );
-      await this.callBuilderMethod(builder, specificCallArgs, runManager);
 
       const builderAppliedDefaultNotes = builder.getNotes();
       this.logger.debug(

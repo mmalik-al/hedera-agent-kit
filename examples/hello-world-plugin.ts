@@ -54,7 +54,7 @@ export class HelloWorldPlugin extends BasePlugin {
 
   private tools: HederaTool[] = [];
 
-  async initialize(context: GenericPluginContext): Promise<void> {
+  override async initialize(context: GenericPluginContext): Promise<void> {
     await super.initialize(context);
     this.context.logger.info('HelloWorldPlugin initialized');
 

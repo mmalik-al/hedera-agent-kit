@@ -4,8 +4,8 @@ import {
   BaseHederaTransactionTool,
   BaseHederaTransactionToolParams,
 } from '../common/base-hedera-transaction-tool';
-import { BaseServiceBuilder } from '../../../builders/base-service-builder';
-import { HtsBuilder } from '../../../builders/hts/hts-builder';
+import { BaseServiceBuilder } from '../../../builders';
+import { HtsBuilder } from '../../../builders';
 
 const TransferNftZodSchemaCore = z.object({
   tokenId: z.string().describe('The token ID of the NFT (e.g., "0.0.xxxx").'),

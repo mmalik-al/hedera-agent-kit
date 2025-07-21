@@ -446,15 +446,18 @@ export interface NFTCreateParams {
 export interface MintNFTParams {
   /** The ID of the NFT token to mint for. */
   tokenId: string | TokenId;
-  /** An array of metadata for each NFT to be minted. Each Uint8Array is one NFT's metadata (max 100 bytes each). */
-  metadata: Uint8Array[];
+  /**
+   * An array of human-readable strings representing metadata for each NFT to be minted.
+   * Each string will be encoded as UTF-8 and must result in 100 bytes or less.
+   */
+  metadata: string[];
   /** Optional. The batch size for minting transactions if many NFTs are minted. Defaults to 10. */
-  batchSize?: number;
-  nftId: NftId;
-  senderAccountId: string | AccountId;
-  receiverAccountId: string | AccountId;
-  isApproved?: boolean;
-  memo?: string;
+  batchSize?: number | undefined;
+  nftId?: NftId | undefined;
+  senderAccountId?: string | AccountId | undefined;
+  receiverAccountId?: string | AccountId | undefined;
+  isApproved?: boolean | undefined;
+  memo?: string | undefined;
 }
 
 /**
@@ -515,8 +518,10 @@ export interface BurnNFTParams {
  * Parameters for transferring a single Non-Fungible Token (NFT).
  */
 export interface TransferNFTParams {
-  /** The specific NFT to transfer, identified by its token ID and serial number. */
-  nftId: NftId; // Using NftId directly, e.g., TokenId.fromString(id).nft(serial)
+  /** The token ID of the NFT (e.g., "0.0.12345"). */
+  tokenId: string;
+  /** The serial number of the NFT within the token. Can be a number or a string representing a positive integer.*/
+  serial: string | number;
   /** The account ID of the sender. */
   senderAccountId: string | AccountId;
   /** The account ID of the receiver. */
