@@ -39,6 +39,7 @@ gh issue create --title "Issue title" --body "part1 part2 part3" --assignee @git
 3. Review Each File:
 
 * For each changed file, ask: "Should the change to [filename] be included in the issue?"
+* * Wait for the response from the user before moving on to the next file. Wait for two responses, yes or no, and if yes, wait for them to provide a description.
 * If yes, ask: "Please provide a description of the change"
 * If no, skip to next file
 
@@ -50,7 +51,7 @@ gh issue create --title "Issue title" --body "part1 part2 part3" --assignee @git
 
 5. Collect Acceptance Criteria:
 
-* Ask: "Please provide acceptance criteria - list the functionality created and expected behavior"
+* Ask: "Please provide acceptance criteria - list the measurable functionality created and expected behavior. You can use the format: The [functionality] should [expected-behavior] with [measurable-result]." 
 * Use response as part3 of the --body flag
 
 
@@ -85,6 +86,7 @@ The Github issue will be created in the `hedera-dev/hedera-agent-kit` repository
 ```
 Based on the output from the gh CLI, you should have an issue link that looks like `https://github.com/hedera-dev/hedera-agent-kit/issues/118`. Tell the user "Please go to the issue at [issue link] and assign it to the Hedera Agent Kit project and assign a status."
 
+Make sure the last thing in the LLM output is the Issue link and the instructions to assign it to the Hedera Agent Kit project and assign a status.
 
 ## Interaction Model
 This process specifically takes responses from the user, and properly formats a CLI command to create a github issue. Each step should be completed, and saved in context as a part of the content for the final CLI command
