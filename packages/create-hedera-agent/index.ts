@@ -42,7 +42,7 @@ function detectPackageManager(): "npm" | "pnpm" | "yarn" | "bun" {
 }
 
 async function main() {
-    console.log(bold(cyan("Create Hedera Agent App")));
+    console.log(bold(cyan("Create Hedera Agent")));
     const isLikelyEcdsaPrivateKey = (key: string | undefined): boolean => {
         if (!key || typeof key !== "string") return false;
         const trimmed = key.trim();
@@ -277,7 +277,7 @@ async function main() {
         const execa = await loadExeca();
         await execa("git", ["init"], { cwd: targetDir, stdio: "pipe" });
         await execa("git", ["add", "."], { cwd: targetDir, stdio: "pipe" });
-        await execa("git", ["commit", "-m", "chore: scaffold with create-hedera-agent-app"], {
+        await execa("git", ["commit", "-m", "chore: scaffold with create-hedera-agent"], {
             cwd: targetDir,
             stdio: "pipe",
         });
