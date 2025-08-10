@@ -5,7 +5,7 @@ import { createAgentBootstrap, createHederaClient, createToolkitConfiguration } 
 import { ChatPromptTemplate, MessagesPlaceholder } from '@langchain/core/prompts';
 import { AgentExecutor, createToolCallingAgent } from 'langchain/agents';
 import { AIMessage, HumanMessage } from '@langchain/core/messages';
-import { ChatOpenAI } from '@langchain/openai';
+import { createLLMFromEnv } from '@/lib/llm';
 
 export const runtime = 'nodejs';
 
@@ -44,11 +44,13 @@ export async function POST(req: NextRequest) {
             ['human', '{input}'],
             ['placeholder', '{agent_scratchpad}'],
         ]);
-        const llmApiKey = process.env.OPENAI_API_KEY;
-        if (!llmApiKey) {
-            return NextResponse.json({ ok: false, error: 'OPENAI_API_KEY is required' }, { status: 400 });
+        let llm;
+        try {
+            llm = createLLMFromEnv();
+        } catch (e) {
+            const message = e instanceof Error ? e.message : 'Invalid AI provider configuration';
+            return NextResponse.json({ ok: false, error: message }, { status: 400 });
         }
-        const llm = new ChatOpenAI({ model: 'gpt-4o-mini' });
         const executor = new AgentExecutor({
             agent: createToolCallingAgent({ llm, tools, prompt: chatPrompt }),
             tools,
