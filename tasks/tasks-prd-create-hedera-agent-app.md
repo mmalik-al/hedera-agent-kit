@@ -45,31 +45,31 @@
   - [x] 2.5 Add Zod schemas for request/response objects and error payloads.
   - [x] 2.6 Ensure no server secrets are serialized to the client in any return path.
 
-- [ ] 3.0 Integrate WalletConnect (HITL) flow: client connector, modal, session handling, and server handoff
-  - [ ] 3.1 Implement `lib/walletconnect.ts` to initialize `DAppConnector` with `NEXT_PUBLIC_WC_PROJECT_ID`, app metadata, and allowed chain IDs for testnet/mainnet.
-  - [ ] 3.2 Create `components/WalletConnect.tsx` to mount the modal, manage session lifecycle (connect/disconnect), and expose connected account to children.
-  - [ ] 3.3 In HITL flow, on receiving transaction bytes from server, trigger WalletConnect request to sign and broadcast; surface success/failure.
-  - [ ] 3.4 Handle session events (accountsChanged, chainChanged) and error states (no session, user rejection).
-  - [ ] 3.5 Provide a small helper to map `NEXT_PUBLIC_NETWORK` to WalletConnect chain IDs.
+- [x] 3.0 Integrate WalletConnect (HITL) flow: client connector, modal, session handling, and server handoff
+  - [x] 3.1 Implement `lib/walletconnect.ts` to initialize `DAppConnector` with `NEXT_PUBLIC_WC_PROJECT_ID`, app metadata, and allowed chain IDs for testnet/mainnet.
+  - [x] 3.2 Create `components/WalletConnect.tsx` to mount the modal, manage session lifecycle (connect/disconnect), and expose connected account to children.
+  - [x] 3.3 In HITL flow, on receiving transaction bytes from server, trigger WalletConnect request to sign and broadcast; surface success/failure.
+  - [x] 3.4 Handle session events (accountsChanged, chainChanged) and error states (no session, user rejection).
+  - [x] 3.5 Provide a small helper to map `NEXT_PUBLIC_NETWORK` to WalletConnect chain IDs.
 
-- [ ] 4.0 Build minimal chat UI with mode/network banner and HITL “Review & Sign” panel
-  - [ ] 4.1 Implement `components/Chat.tsx` with message list, input box, submit button, and loading spinner.
-  - [ ] 4.2 Add a banner showing **mode** and **network** from `NEXT_PUBLIC_AGENT_MODE` and `NEXT_PUBLIC_NETWORK`.
-  - [ ] 4.3 Wire send handler to POST `/api/agent` with `{ prompt }`; render assistant responses.
-  - [ ] 4.4 If response indicates signature required (HITL/RETURN_BYTES), show a “Review & Sign” panel that opens WalletConnect modal.
-  - [ ] 4.5 Display transaction status (pending, confirmed) and surface any errors inline.
-  - [ ] 4.6 Keep a local (in-memory) chat history; no persistence in POC.
+- [x] 4.0 Build minimal chat UI with mode/network banner and HITL “Review & Sign” panel
+  - [x] 4.1 Implement `components/Chat.tsx` with message list, input box, submit button, and loading spinner.
+  - [x] 4.2 Add a banner showing **mode** and **network** from `NEXT_PUBLIC_AGENT_MODE` and `NEXT_PUBLIC_NETWORK`.
+  - [x] 4.3 Wire send handler to POST `/api/agent` with `{ input }`; render assistant responses.
+  - [x] 4.4 If response indicates signature required (HITL/RETURN_BYTES), show a “Review & Sign” panel that opens WalletConnect modal.
+  - [x] 4.5 Display transaction status (pending, confirmed) and surface any errors inline.
+  - [x] 4.6 Keep a local (in-memory) chat history; no persistence in POC.
 
-- [ ] 5.0 Implement `create-hedera-agent-app` CLI (prompts, flags, env writing, copy template, install deps, next steps)
-  - [ ] 5.1 Create `packages/create-hedera-agent-app/` with `package.json` (name, bin), and `index.ts` entrypoint.
-  - [ ] 5.2 Implement interactive prompts: project name, package manager; **Mode** (`autonomous` | `human`), **Network** (`testnet` default | `mainnet`).
-  - [ ] 5.3 Conditional prompts: **Autonomous** → `HEDERA_OPERATOR_ID`, `HEDERA_OPERATOR_KEY` (masked). **HITL** → `NEXT_PUBLIC_WC_PROJECT_ID` (and optional `WC_RELAY_URL`).
-  - [ ] 5.4 Optional AI provider prompt: `openai | anthropic | groq | ollama`; capture provider-specific API key(s) if selected.
-  - [ ] 5.5 Implement non-interactive flags: `--mode`, `--network`, `--pm`.
-  - [ ] 5.6 Copy `typescript/examples/nextjs` into target folder; replace app name and initialize `.env.local` from captured values.
-  - [ ] 5.7 Ensure client-safe vs server-only env keys are correctly prefixed and placed.
-  - [ ] 5.8 Detect package manager; install dependencies; handle failure with clear messages and cleanup on abort.
-  - [ ] 5.9 Optionally initialize git and create first commit; print “next steps” (cd, `npm run dev`).
+- [x] 5.0 Implement `create-hedera-agent-app` CLI (prompts, flags, env writing, copy template, install deps, next steps)
+  - [x] 5.1 Create `packages/create-hedera-agent-app/` with `package.json` (name, bin), and `index.ts` entrypoint.
+  - [x] 5.2 Implement interactive prompts: project name, package manager; **Mode** (`autonomous` | `human`), **Network** (`testnet` default | `mainnet`).
+  - [x] 5.3 Conditional prompts: **Autonomous** → `HEDERA_OPERATOR_ID`, `HEDERA_OPERATOR_KEY` (masked). **HITL** → `NEXT_PUBLIC_WC_PROJECT_ID` (and optional `WC_RELAY_URL`).
+  - [x] 5.4 Optional AI provider prompt: `openai | anthropic | groq | ollama`; capture provider-specific API key(s) if selected.
+  - [x] 5.5 Implement non-interactive flags: `--mode`, `--network`, `--pm`.
+  - [x] 5.6 Copy `typescript/examples/nextjs` into target folder; replace app name and initialize `.env.local` from captured values.
+  - [x] 5.7 Ensure client-safe vs server-only env keys are correctly prefixed and placed.
+  - [x] 5.8 Detect package manager; install dependencies; handle failure with clear messages and cleanup on abort.
+  - [x] 5.9 Optionally initialize git and create first commit; print “next steps” (cd, `npm run dev`).
 
 - [ ] 6.0 Documentation & rollout (no automated tests in this POC)
   - [ ] 6.1 Finalize example template `README.md` to explain modes, env vars, and WalletConnect setup.
