@@ -3,7 +3,7 @@
 import WalletConnectPanel from "./WalletConnect";
 
 export default function WalletConnectClient() {
-    return <WalletConnectPanel />;
+    return <WalletConnectPanel variant="compact" />;
 }
 
 

@@ -2,8 +2,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ensureWalletConnector, connectWallet, disconnectAllSessions, getPairedAccountId } from "@/lib/walletconnect";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
-export default function WalletConnectPanel() {
+type Variant = "panel" | "compact";
+
+export default function WalletConnectPanel({ variant = "panel" }: { variant?: Variant }) {
     const [connected, setConnected] = useState(false);
     const [accountId, setAccountId] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -75,6 +79,22 @@ export default function WalletConnectPanel() {
             setLoading(false);
         }
     }, []);
+
+    if (variant === "compact") {
+        return (
+            <div className="flex items-center gap-2">
+                {connected ? (
+                    <>
+                        <Badge variant="secondary" className="text-xs">{accountId ?? "—"}</Badge>
+                        <Button variant="outline" size="sm" onClick={onDisconnect} disabled={loading}>Disconnect</Button>
+                    </>
+                ) : (
+                    <Button size="sm" onClick={onConnect} disabled={loading}>Connect</Button>
+                )}
+                {error && <span className="text-xs text-red-600">{error}</span>}
+            </div>
+        );
+    }
 
     return (
         <div className="w-full max-w-xl border rounded p-4 flex flex-col gap-3">

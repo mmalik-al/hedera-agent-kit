@@ -79,7 +79,18 @@ export async function disconnectAllSessions() {
  */
 export async function getPairedAccountId(): Promise<string> {
     const c = await ensureWalletConnector("warn");
-    const wc = (c as unknown as { walletConnectClient?: any }).walletConnectClient;
+    type WalletConnectClientLike = {
+        session?: {
+            getAll?: () => Array<{
+                namespaces?: {
+                    hedera?: {
+                        accounts?: string[];
+                    };
+                };
+            }>;
+        };
+    };
+    const wc = (c as unknown as { walletConnectClient?: WalletConnectClientLike }).walletConnectClient;
     // WalletConnect v2 sessions live under client.session.getAll()
     const sessions = wc?.session?.getAll?.() ?? [];
     const accounts: string[] = [];
