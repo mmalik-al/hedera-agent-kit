@@ -255,11 +255,11 @@ async function main() {
     console.log(cyan("Installing dependencies..."));
     const installCmd =
         pm === "npm"
-            ? ["npm", ["install"]]
+            ? ["npm", ["install", "--no-fund", "--no-audit"]]
             : pm === "pnpm"
-                ? ["pnpm", ["install"]]
+                ? ["pnpm", ["install", "--silent"]]
                 : pm === "yarn"
-                    ? ["yarn", []]
+                    ? ["yarn", ["install", "--silent", "--non-interactive"]]
                     : ["bun", ["install"]];
 
     try {
@@ -291,6 +291,8 @@ async function main() {
         `  cd ${projectName}\n` +
         `  ${pm === "yarn" ? "yarn dev" : pm === "pnpm" ? "pnpm dev" : pm === "bun" ? "bun run dev" : "npm run dev"}\n`
     );
+    // Ensure the CLI exits cleanly even if some child process leaves open handles
+    process.exit(0);
 }
 
 main().catch((err) => {
