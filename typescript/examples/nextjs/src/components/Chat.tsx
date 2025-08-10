@@ -1,7 +1,17 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { signAndExecuteBytes, getPairedAccountId, connectWallet, ensureWalletConnector } from "@/lib/walletconnect";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import { Send } from "lucide-react";
 
 type Message = { role: "user" | "assistant"; content: string };
 
@@ -13,14 +23,37 @@ export default function Chat() {
     const [pendingBytes, setPendingBytes] = useState<string | null>(null);
     const [txStatus, setTxStatus] = useState<string | null>(null);
     const [accountId, setAccountId] = useState<string>("");
+    const [openReview, setOpenReview] = useState(false);
+    const [isSigning, setIsSigning] = useState(false);
+    const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
     const mode = process.env.NEXT_PUBLIC_AGENT_MODE;
 
     // In HITL mode, avoid auto-initializing WalletConnect on page load; derive account id on demand in submit/sign flows
 
+    const focusComposer = useCallback(() => {
+        if (typeof window === "undefined") return;
+        const doFocus = () => {
+            const el = inputRef.current ?? (document.getElementById("agent-composer") as HTMLTextAreaElement | null);
+            if (el) {
+                el.focus();
+                try {
+                    const len = el.value.length;
+                    el.setSelectionRange(len, len);
+                } catch { }
+            }
+        };
+        // double rAF to ensure DOM updates settled after state changes
+        requestAnimationFrame(() => requestAnimationFrame(doFocus));
+    }, []);
+
     const submit = useCallback(async () => {
         setError(null);
         setLoading(true);
+        // Reset signing state for a fresh request cycle
+        setTxStatus(null);
+        setOpenReview(false);
+        setPendingBytes(null);
         const nextMessages = [...messages, { role: "user", content: input } as Message];
         setMessages(nextMessages);
         try {
@@ -38,6 +71,8 @@ export default function Chat() {
                 const json = await res.json();
                 if (!res.ok || !json.ok) throw new Error(json.error || "Request failed");
                 if (json.bytesBase64) {
+                    // Ensure stale statuses don't block the next auto-sign/dialog flow
+                    setTxStatus(null);
                     setPendingBytes(json.bytesBase64);
                     setMessages(m => [...m, { role: "assistant", content: "Transaction requires signature." }]);
                 } else {
@@ -68,8 +103,9 @@ export default function Chat() {
         } finally {
             setLoading(false);
             setInput("");
+            focusComposer();
         }
-    }, [input, messages, accountId, mode]);
+    }, [input, messages, accountId, mode, focusComposer]);
 
     const sign = useCallback(async () => {
         if (!pendingBytes) return;
@@ -92,62 +128,128 @@ export default function Chat() {
                 }
             }
             const bytes = typeof window === "undefined" ? Buffer.from(pendingBytes, "base64") : Uint8Array.from(atob(pendingBytes), c => c.charCodeAt(0));
+            setIsSigning(true);
             const result = await signAndExecuteBytes({ bytes, accountId: acct });
             setTxStatus("confirmed");
             setMessages(m => [...m, { role: "assistant", content: JSON.stringify(result) }]);
             setPendingBytes(null);
+            setOpenReview(false);
         } catch (e) {
             setTxStatus(null);
             setError(e instanceof Error ? e.message : String(e));
+        }
+        finally {
+            setIsSigning(false);
         }
     }, [pendingBytes, accountId]);
 
     const reviewVisible = useMemo(() => mode === "human" && Boolean(pendingBytes), [mode, pendingBytes]);
 
-    // Auto-trigger signing when bytes are ready in HITL mode
+    // When bytes are ready in HITL mode, auto-sign if already paired; otherwise open dialog
     useEffect(() => {
-        if (reviewVisible && !txStatus) {
-            // fire and forget; errors will surface via setError in sign()
-            void sign();
-        }
-    }, [reviewVisible]);
+        // Only guard while actively signing to prevent duplicate concurrent calls
+        if (!reviewVisible || isSigning) return;
+        (async () => {
+            try {
+                // Consider wallet paired if we can derive an account id
+                let acct = accountId;
+                if (!acct) {
+                    try { acct = await getPairedAccountId(); setAccountId(acct); } catch { /* not paired */ }
+                }
+                if (acct && !isSigning) {
+                    await sign();
+                } else {
+                    setOpenReview(true);
+                }
+            } catch {
+                setOpenReview(true);
+            }
+        })();
+    }, [reviewVisible, isSigning, accountId, sign]);
 
     return (
-        <div className="w-full max-w-2xl flex flex-col gap-4">
-            <div className="border rounded p-3 min-h-[200px]">
-                {messages.length === 0 ? (
-                    <div className="text-sm text-gray-500">No messages yet.</div>
-                ) : (
-                    messages.map((m, i) => (
-                        <div key={i} className="text-sm whitespace-pre-wrap">
-                            <span className="font-semibold">{m.role}:</span> {m.content}
+        <Card className="w-full">
+            <CardHeader>
+                <CardTitle className="text-base">Agent Chat</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <ScrollArea className="h-[60vh] pr-4">
+                    {messages.length === 0 ? (
+                        <div className="text-sm text-muted-foreground">No messages yet.</div>
+                    ) : (
+                        <div className="flex flex-col gap-3">
+                            {messages.map((m, i) => (
+                                <div key={i} className={cn("flex items-start gap-2", m.role === "user" ? "justify-end" : "justify-start")}>
+                                    {m.role === "assistant" && (
+                                        <Avatar className="h-6 w-6">
+                                            <AvatarFallback>A</AvatarFallback>
+                                        </Avatar>
+                                    )}
+                                    <div
+                                        className={cn(
+                                            "max-w-[75%] rounded-md px-3 py-2 text-sm whitespace-pre-wrap break-words overflow-x-hidden",
+                                            m.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
+                                        )}
+                                        style={{ overflowWrap: "anywhere", wordBreak: "break-word" }}
+                                    >
+                                        {m.content}
+                                    </div>
+                                    {m.role === "user" && (
+                                        <Avatar className="h-6 w-6">
+                                            <AvatarFallback>U</AvatarFallback>
+                                        </Avatar>
+                                    )}
+                                </div>
+                            ))}
                         </div>
-                    ))
+                    )}
+                </ScrollArea>
+
+                {error && (
+                    <Alert variant="destructive" className="mt-3">
+                        <AlertTitle>Error</AlertTitle>
+                        <AlertDescription>{error}</AlertDescription>
+                    </Alert>
                 )}
-            </div>
-            {/* Account ID input removed; derived from paired wallet in HITL mode */}
-            <div className="flex items-center gap-2">
-                <input
-                    className="border rounded px-2 py-2 flex-1"
-                    placeholder="Ask the agent..."
+            </CardContent>
+            <CardFooter className="gap-2">
+                <Textarea
+                    ref={inputRef}
+                    id="agent-composer"
                     value={input}
-                    onChange={e => setInput(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && submit()}
+                    placeholder="Ask the agent..."
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            void submit();
+                        }
+                    }}
+                    className="min-h-[44px] max-h-40 resize-y"
                     disabled={loading}
                 />
-                <button className="px-4 py-2 bg-black text-white rounded disabled:opacity-50" onClick={submit} disabled={loading || !input}>
-                    Send
-                </button>
-            </div>
-            {reviewVisible && (
-                <div className="border rounded p-3 bg-yellow-50">
-                    <div className="text-sm font-semibold mb-2">Review & Sign</div>
-                    <div className="text-xs mb-2">A signing request has been sent to your wallet.</div>
-                    {txStatus && <div className="text-xs mt-2">Status: {txStatus}</div>}
-                </div>
-            )}
-            {error && <div className="text-xs text-red-600">{error}</div>}
-        </div>
+                <Button onClick={submit} disabled={loading || !input}>
+                    <Send className="mr-2 h-4 w-4" /> Send
+                </Button>
+            </CardFooter>
+
+            <Dialog open={openReview} onOpenChange={setOpenReview}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Review & Sign</DialogTitle>
+                        <DialogDescription>
+                            A signing request has been sent to your wallet. Continue to sign and submit.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex items-center justify-between">
+                        <Badge variant={txStatus === "confirmed" ? "default" : "secondary"}>{txStatus ?? "pending"}</Badge>
+                        <Button onClick={() => void sign()} disabled={txStatus === "confirmed"}>
+                            Sign in wallet
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        </Card>
     );
 }
 
