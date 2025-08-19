@@ -51,15 +51,33 @@ Create a `.env.local` file based on the provided `.env.local.example`:
 ```
 nextjs/
 ├── src/
-│   └── app/
-│       ├── layout.tsx      # Root layout, global styles
-│       ├── page.tsx        # Home page
-│       └── globals.css     # Base styles
-├── public/                 # Static assets (SVGs)
-├── package.json            # Scripts and dependencies
-├── tsconfig.json           # TypeScript config
-├── next.config.ts          # Next.js config
-├── README.md               # This file
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── agent/
+│   │   │   │   └── route.ts        # Autonomous agent execution endpoint
+│   │   │   └── wallet/
+│   │   │       └── prepare/
+│   │   │           └── route.ts    # Human-in-the-loop transaction preparation
+│   │   ├── layout.tsx              # Root layout, global styles
+│   │   ├── page.tsx                # Home page
+│   │   ├── globals.css             # Base styles
+│   │   └── favicon.ico
+│   ├── components/
+│   │   ├── Chat.tsx                # Main chat interface
+│   │   ├── WalletConnect.tsx       # WalletConnect integration
+│   │   ├── WalletConnectClient.tsx # WalletConnect client wrapper
+│   │   └── ui/                     # Reusable UI components (shadcn/ui)
+│   └── lib/
+│       ├── agent.ts                # Agent configuration and utilities
+│       ├── llm.ts                  # LLM integration
+│       ├── schemas.ts              # Zod validation schemas
+│       ├── utils.ts                # General utilities
+│       └── walletconnect.ts        # WalletConnect setup
+├── public/                         # Static assets
+├── package.json                    # Scripts and dependencies
+├── tsconfig.json                   # TypeScript configuration
+├── next.config.ts                  # Next.js configuration
+└── README.md                       # This file
 ```
 
 ## Included Dependencies
