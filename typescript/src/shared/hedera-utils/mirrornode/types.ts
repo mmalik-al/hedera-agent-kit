@@ -21,7 +21,7 @@ export type TopicMessagesQueryParams = {
 export type TopicMessage = {
   topicId: string;
   message: string;
-  timestamp: string;
+  consensus_timestamp: string;
 };
 
 export type TopicMessagesResponse = {
@@ -30,26 +30,34 @@ export type TopicMessagesResponse = {
 };
 
 export type TokenBalance = {
-  account: string;
+  automatic_association: boolean;
+  created_timestamp: string;
+  token_id: string;
+  freeze_status: string;
+  kyc_status: string;
   balance: number;
   decimals: number;
 };
+
 export type TokenBalancesResponse = {
   tokens: TokenBalance[];
 };
+
 export type AccountResponse = {
   accountId: string;
   accountPublicKey: string;
   balance: AccountBalanceResponse;
+  evmAddress: string;
 };
 
 export type AccountAPIResponse = {
-  accountId: string;
+  account: string;
   key: {
     key: string;
     _type: KeyEncryptionType;
   };
   balance: AccountBalanceResponse;
+  evm_address: string;
 };
 
 export type AccountBalanceResponse = {
