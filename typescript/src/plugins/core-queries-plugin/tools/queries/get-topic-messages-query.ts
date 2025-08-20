@@ -25,6 +25,18 @@ ${usageInstructions}
 `;
 };
 
+const postProcess = (messages: TopicMessage[], topicId: string) => {
+  const messagesText = messages.map(
+    message =>
+      `${Buffer.from(message.message, 'base64').toString('utf-8')} - posted at: ${message.consensus_timestamp}\n`,
+  );
+
+  return `Messages for topic ${topicId}:
+  --- Messages ---
+  ${messagesText}
+  `;
+};
+
 const getTopicMessagesQueryParams = (
   params: z.infer<ReturnType<typeof topicMessagesQueryParameters>>,
 ): TopicMessagesQueryParams => {
@@ -59,8 +71,11 @@ export const getTopicMessagesQuery = async (
     const messages = await mirrornodeService.getTopicMessages(getTopicMessagesQueryParams(params));
 
     return {
-      topicId: messages.topicId,
-      messages: convertMessagesFromBase64ToString(messages.messages),
+      raw: {
+        topicId: messages.topicId,
+        messages: convertMessagesFromBase64ToString(messages.messages),
+      },
+      humanMessage: postProcess(messages.messages, params.topicId),
     };
   } catch (error) {
     console.error('Error getting topic messages', error);
