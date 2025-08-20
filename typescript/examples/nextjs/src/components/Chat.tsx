@@ -91,11 +91,7 @@ export default function Chat() {
                 });
                 const json = await res.json();
                 if (!res.ok || !json.ok) throw new Error(json.error || "Request failed");
-                const text = typeof json.result?.output === 'string'
-                    ? json.result.output
-                    : typeof json.result === 'string'
-                        ? json.result
-                        : JSON.stringify(json.result);
+                const text = json.result
                 setMessages(m => [...m, { role: "assistant", content: text }]);
             }
         } catch (e) {

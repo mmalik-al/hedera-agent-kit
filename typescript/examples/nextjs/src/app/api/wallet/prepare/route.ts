@@ -71,7 +71,9 @@ export async function POST(req: NextRequest) {
         if (maybeBytes) {
             return NextResponse.json({ ok: true, mode: bootstrap.mode, bytesBase64: maybeBytes });
         }
-        return NextResponse.json({ ok: true, mode: bootstrap.mode, result: response });
+        // handle different response types (openai and anthropic have different shapes)
+        const result = typeof response.output === 'string' ? response.output : response.output[0].text;
+        return NextResponse.json({ ok: true, mode: bootstrap.mode, result });
     } catch (err) {
         const message = err instanceof Error ? err.message : 'Unknown error';
         return NextResponse.json({ ok: false, error: message }, { status: 400 });
