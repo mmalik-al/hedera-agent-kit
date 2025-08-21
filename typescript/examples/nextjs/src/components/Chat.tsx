@@ -76,11 +76,7 @@ export default function Chat() {
                     setPendingBytes(json.bytesBase64);
                     setMessages(m => [...m, { role: "assistant", content: "Transaction requires signature." }]);
                 } else {
-                    const text = typeof json.result?.output === 'string'
-                        ? json.result.output
-                        : typeof json.result === 'string'
-                            ? json.result
-                            : JSON.stringify(json.result);
+                    const text = json.result;
                     setMessages(m => [...m, { role: "assistant", content: text }]);
                 }
             } else {
