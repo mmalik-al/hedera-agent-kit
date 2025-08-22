@@ -1,8 +1,12 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { AgentExecutor } from 'langchain/agents';
-import { coreAccountPlugin, coreAccountPluginToolNames } from '@/plugins';
 import { HederaLangchainToolkit } from '@/langchain';
-import { createLangchainTestSetup, getToolCallFromResult, expectToolCall, type LangchainTestSetup } from '../../utils/langchain-test-setup';
+import {
+  createLangchainTestSetup,
+  getToolCallFromResult,
+  expectToolCall,
+  type LangchainTestSetup,
+} from '../../utils/langchain-test-setup';
 
 describe('Transfer HBAR Tool Matching Integration Tests', () => {
   let testSetup: LangchainTestSetup;
@@ -10,17 +14,7 @@ describe('Transfer HBAR Tool Matching Integration Tests', () => {
   let toolkit: HederaLangchainToolkit;
 
   beforeAll(async () => {
-    const { TRANSFER_HBAR_TOOL } = coreAccountPluginToolNames;
-
-    testSetup = await createLangchainTestSetup({
-      tools: [TRANSFER_HBAR_TOOL],
-      plugins: [coreAccountPlugin], // TODO: should we add more plugins?
-      systemPrompt: `You are a Hedera blockchain assistant. You have access to tools for blockchain operations.
-        When a user asks to transfer HBAR, use the transfer_hbar_tool with the correct parameters.
-        Extract the amount and recipient account ID from the user's request.
-        Always use the exact tool name and parameter structure expected.`,
-    });
-
+    testSetup = await createLangchainTestSetup();
     agentExecutor = testSetup.agentExecutor;
     toolkit = testSetup.toolkit;
   });
@@ -38,7 +32,7 @@ describe('Transfer HBAR Tool Matching Integration Tests', () => {
       const result = await agentExecutor.invoke({ input });
       const toolCall = getToolCallFromResult(result);
 
-      expectToolCall(toolCall, 'transfer_hbar_tool', (toolInput) => {
+      expectToolCall(toolCall, 'transfer_hbar_tool', toolInput => {
         expect(toolInput.transfers).toBeDefined();
         expect(toolInput.transfers).toHaveLength(1);
         expect(toolInput.transfers[0].accountId).toBe('0.0.1');
@@ -52,7 +46,7 @@ describe('Transfer HBAR Tool Matching Integration Tests', () => {
       const result = await agentExecutor.invoke({ input });
       const toolCall = getToolCallFromResult(result);
 
-      expectToolCall(toolCall, 'transfer_hbar_tool', (toolInput) => {
+      expectToolCall(toolCall, 'transfer_hbar_tool', toolInput => {
         expect(toolInput.transfers[0].accountId).toBe('0.0.2222');
         expect(toolInput.transfers[0].amount).toBe(0.5);
       });
@@ -64,7 +58,7 @@ describe('Transfer HBAR Tool Matching Integration Tests', () => {
       const result = await agentExecutor.invoke({ input });
       const toolCall = getToolCallFromResult(result);
 
-      expectToolCall(toolCall, 'transfer_hbar_tool', (toolInput) => {
+      expectToolCall(toolCall, 'transfer_hbar_tool', toolInput => {
         expect(toolInput.transfers[0].accountId).toBe('0.0.3333');
         expect(toolInput.transfers[0].amount).toBe(2);
         expect(toolInput.transactionMemo).toBe('Payment for services');
@@ -77,7 +71,7 @@ describe('Transfer HBAR Tool Matching Integration Tests', () => {
       const result = await agentExecutor.invoke({ input });
       const toolCall = getToolCallFromResult(result);
 
-      expectToolCall(toolCall, 'transfer_hbar_tool', (toolInput) => {
+      expectToolCall(toolCall, 'transfer_hbar_tool', toolInput => {
         expect(toolInput.transfers).toHaveLength(2);
         expect(toolInput.transfers[0].accountId).toBe('0.0.1111');
         expect(toolInput.transfers[0].amount).toBe(1);
@@ -92,7 +86,7 @@ describe('Transfer HBAR Tool Matching Integration Tests', () => {
       const result = await agentExecutor.invoke({ input });
       const toolCall = getToolCallFromResult(result);
 
-      expectToolCall(toolCall, 'transfer_hbar_tool', (toolInput) => {
+      expectToolCall(toolCall, 'transfer_hbar_tool', toolInput => {
         expect(toolInput.transfers[0].accountId).toBe('0.0.6666');
         expect(toolInput.transfers[0].amount).toBe(0.1);
         expect(toolInput.sourceAccountId).toBe('0.0.5555');
@@ -104,14 +98,14 @@ describe('Transfer HBAR Tool Matching Integration Tests', () => {
         { input: 'Please send 5 HBAR to account 0.0.7777', accountId: '0.0.7777', amount: 5 },
         { input: 'I want to transfer 3.14 HBAR to 0.0.8888', accountId: '0.0.8888', amount: 3.14 },
         { input: 'Can you move 10 HBAR to 0.0.9999?', accountId: '0.0.9999', amount: 10 },
-        { input: 'Pay 0.01 HBAR to 0.0.1010', accountId: '0.0.1010', amount: 0.01 }
+        { input: 'Pay 0.01 HBAR to 0.0.1010', accountId: '0.0.1010', amount: 0.01 },
       ];
 
       for (const variation of variations) {
         const result = await agentExecutor.invoke({ input: variation.input });
         const toolCall = getToolCallFromResult(result);
 
-        expectToolCall(toolCall, 'transfer_hbar_tool', (toolInput) => {
+        expectToolCall(toolCall, 'transfer_hbar_tool', toolInput => {
           expect(toolInput.transfers).toBeDefined();
           expect(toolInput.transfers).toHaveLength(1);
           expect(toolInput.transfers[0].accountId).toBe(variation.accountId);
@@ -121,12 +115,13 @@ describe('Transfer HBAR Tool Matching Integration Tests', () => {
     });
 
     it('should extract correct parameters for complex transfer request', async () => {
-      const input = 'Transfer 15.5 HBAR to 0.0.12345 with the memo "Monthly payment - invoice #123"';
+      const input =
+        'Transfer 15.5 HBAR to 0.0.12345 with the memo "Monthly payment - invoice #123"';
 
       const result = await agentExecutor.invoke({ input });
       const toolCall = getToolCallFromResult(result);
 
-      expectToolCall(toolCall, 'transfer_hbar_tool', (toolInput) => {
+      expectToolCall(toolCall, 'transfer_hbar_tool', toolInput => {
         expect(toolInput.transfers[0].accountId).toBe('0.0.12345');
         expect(toolInput.transfers[0].amount).toBe(15.5);
         expect(toolInput.transactionMemo).toBe('Monthly payment - invoice #123');
@@ -139,7 +134,7 @@ describe('Transfer HBAR Tool Matching Integration Tests', () => {
       const result = await agentExecutor.invoke({ input });
       const toolCall = getToolCallFromResult(result);
 
-      expectToolCall(toolCall, 'transfer_hbar_tool', (toolInput) => {
+      expectToolCall(toolCall, 'transfer_hbar_tool', toolInput => {
         expect(toolInput.transfers[0].accountId).toBe('0.0.12345');
         expect(toolInput.transfers[0].amount).toBe(15.5);
         expect(toolInput.transactionMemo).toBe('Monthly payment - invoice #123');

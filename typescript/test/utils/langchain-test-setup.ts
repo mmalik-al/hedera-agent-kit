@@ -6,6 +6,37 @@ import { HederaLangchainToolkit } from '@/langchain';
 import { AgentMode } from '@/shared';
 import type { Plugin } from '@/shared/plugin';
 import { expect } from 'vitest';
+import {
+  coreAccountPlugin,
+  coreAccountPluginToolNames,
+  coreConsensusPlugin,
+  coreConsensusPluginToolNames,
+  coreHTSPlugin,
+  coreHTSPluginToolNames,
+  coreQueriesPlugin,
+  coreQueriesPluginToolNames,
+} from '@/plugins';
+
+const { TRANSFER_HBAR_TOOL } = coreAccountPluginToolNames;
+const { CREATE_FUNGIBLE_TOKEN_TOOL } = coreHTSPluginToolNames;
+const { CREATE_TOPIC_TOOL, SUBMIT_TOPIC_MESSAGE_TOOL } = coreConsensusPluginToolNames;
+const { GET_HBAR_BALANCE_QUERY_TOOL } = coreQueriesPluginToolNames;
+
+// Default options for creating a test setup - should include all possible actions
+const OPTIONS: LangchainTestOptions = {
+  tools: [
+    TRANSFER_HBAR_TOOL,
+    CREATE_FUNGIBLE_TOKEN_TOOL,
+    CREATE_TOPIC_TOOL,
+    SUBMIT_TOPIC_MESSAGE_TOOL,
+    GET_HBAR_BALANCE_QUERY_TOOL,
+  ],
+  plugins: [coreAccountPlugin, coreQueriesPlugin, coreHTSPlugin, coreConsensusPlugin], // TODO: create a function that fetches all possible tools and plugins
+  systemPrompt: `You are a Hedera blockchain assistant. You have access to tools for blockchain operations.
+        When a user asks to transfer HBAR, use the transfer_hbar_tool with the correct parameters.
+        Extract the amount and recipient account ID from the user's request.
+        Always use the exact tool name and parameter structure expected.`,
+}
 
 export interface LangchainTestSetup {
   client: Client;
@@ -23,7 +54,7 @@ export interface LangchainTestOptions {
   model?: string;
 }
 
-export async function createLangchainTestSetup(options: LangchainTestOptions): Promise<LangchainTestSetup> {
+export async function createLangchainTestSetup(options: LangchainTestOptions = OPTIONS): Promise<LangchainTestSetup> {
   // Initialize Hedera client
   const operatorId = process.env.ACCOUNT_ID;
   const operatorKey = process.env.PRIVATE_KEY;

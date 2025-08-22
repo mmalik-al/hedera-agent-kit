@@ -1,7 +1,9 @@
 import {
+  AccountBalanceQuery,
   AccountCreateTransaction,
   AccountDeleteTransaction,
   AccountId,
+  AccountInfoQuery,
   Client,
   Hbar,
   NftId,
@@ -11,11 +13,13 @@ import {
   TokenCreateTransaction,
   TokenDeleteTransaction,
   TokenId,
+  TokenInfoQuery, TokenNftInfoQuery,
   TokenSupplyType,
   TokenType,
   TopicCreateTransaction,
   TopicDeleteTransaction,
   TopicId,
+  TopicInfoQuery,
   TopicMessageSubmitTransaction,
   TransferTransaction,
 } from '@hashgraph/sdk';
@@ -244,6 +248,44 @@ class HederaTestOps {
     const resp = await tx.execute(this.client);
     const receipt = await resp.getReceipt(this.client);
     return receipt.status;
+  }
+
+  async getAccountBalances(accountId: string) {
+    const query = new AccountBalanceQuery().setAccountId(AccountId.fromString(accountId));
+    return await query.execute(this.client);
+  }
+
+  async getAccountInfo(accountId: string) {
+    const query = new AccountInfoQuery().setAccountId(AccountId.fromString(accountId));
+    return await query.execute(this.client);
+  }
+
+  async getTopicInfo(topicId: string) {
+    const query = new TopicInfoQuery().setTopicId(TopicId.fromString(topicId));
+    return await query.execute(this.client);
+  }
+
+  async getTokenInfo(tokenId: string) {
+    const query = new TokenInfoQuery().setTokenId(TokenId.fromString(tokenId));
+    return await query.execute(this.client);
+  }
+
+  async getNftInfo(tokenId: string, serial: number) {
+    const query = new TokenNftInfoQuery({nftId: new NftId(TokenId.fromString(tokenId), serial)})
+    return await query.execute(this.client);
+  }
+
+  async getAccountTokenBalances(accountId: string, tokenId: string) {
+    const accountTokenBalances = await this.getAccountBalances(accountId);
+    const tokenIdObj = TokenId.fromString(tokenId);
+    const balance =  accountTokenBalances.tokens?.get(tokenIdObj) ?? 0;
+    const decimals = accountTokenBalances.tokenDecimals?.get(tokenIdObj) ?? 0;
+    return { balance, decimals };
+  }
+
+  async getAccountHbarBalance(accountId: string) {
+    const accountInfo = await this.getAccountInfo(accountId);
+    return accountInfo.balance;
   }
 }
 
