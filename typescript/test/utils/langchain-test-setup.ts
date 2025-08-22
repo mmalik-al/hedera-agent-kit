@@ -18,9 +18,20 @@ import {
 } from '@/plugins';
 
 const { TRANSFER_HBAR_TOOL } = coreAccountPluginToolNames;
-const { CREATE_FUNGIBLE_TOKEN_TOOL } = coreHTSPluginToolNames;
+const {
+  CREATE_FUNGIBLE_TOKEN_TOOL,
+  CREATE_NON_FUNGIBLE_TOKEN_TOOL,
+  AIRDROP_FUNGIBLE_TOKEN_TOOL,
+  MINT_FUNGIBLE_TOKEN_TOOL,
+  MINT_NON_FUNGIBLE_TOKEN_TOOL,
+} = coreHTSPluginToolNames;
 const { CREATE_TOPIC_TOOL, SUBMIT_TOPIC_MESSAGE_TOOL } = coreConsensusPluginToolNames;
-const { GET_HBAR_BALANCE_QUERY_TOOL } = coreQueriesPluginToolNames;
+const {
+  GET_HBAR_BALANCE_QUERY_TOOL,
+  GET_ACCOUNT_QUERY_TOOL,
+  GET_ACCOUNT_TOKEN_BALANCES_QUERY_TOOL,
+  GET_TOPIC_MESSAGES_QUERY_TOOL,
+} = coreQueriesPluginToolNames;
 
 // Default options for creating a test setup - should include all possible actions
 const OPTIONS: LangchainTestOptions = {
@@ -30,13 +41,20 @@ const OPTIONS: LangchainTestOptions = {
     CREATE_TOPIC_TOOL,
     SUBMIT_TOPIC_MESSAGE_TOOL,
     GET_HBAR_BALANCE_QUERY_TOOL,
+    CREATE_NON_FUNGIBLE_TOKEN_TOOL,
+    AIRDROP_FUNGIBLE_TOKEN_TOOL,
+    MINT_FUNGIBLE_TOKEN_TOOL,
+    MINT_NON_FUNGIBLE_TOKEN_TOOL,
+    GET_ACCOUNT_QUERY_TOOL,
+    GET_ACCOUNT_TOKEN_BALANCES_QUERY_TOOL,
+    GET_TOPIC_MESSAGES_QUERY_TOOL,
   ],
-  plugins: [coreAccountPlugin, coreQueriesPlugin, coreHTSPlugin, coreConsensusPlugin], // TODO: create a function that fetches all possible tools and plugins
+  plugins: [coreAccountPlugin, coreQueriesPlugin, coreHTSPlugin, coreConsensusPlugin],
   systemPrompt: `You are a Hedera blockchain assistant. You have access to tools for blockchain operations.
         When a user asks to transfer HBAR, use the transfer_hbar_tool with the correct parameters.
         Extract the amount and recipient account ID from the user's request.
         Always use the exact tool name and parameter structure expected.`,
-}
+};
 
 export interface LangchainTestSetup {
   client: Client;
@@ -54,7 +72,9 @@ export interface LangchainTestOptions {
   model?: string;
 }
 
-export async function createLangchainTestSetup(options: LangchainTestOptions = OPTIONS): Promise<LangchainTestSetup> {
+export async function createLangchainTestSetup(
+  options: LangchainTestOptions = OPTIONS,
+): Promise<LangchainTestSetup> {
   // Initialize Hedera client
   const operatorId = process.env.ACCOUNT_ID;
   const operatorKey = process.env.PRIVATE_KEY;
@@ -87,7 +107,9 @@ export async function createLangchainTestSetup(options: LangchainTestOptions = O
   });
 
   // Create a prompt template for tool calling
-  const systemPrompt = options.systemPrompt || `You are a Hedera blockchain assistant. You have access to tools for blockchain operations.
+  const systemPrompt =
+    options.systemPrompt ||
+    `You are a Hedera blockchain assistant. You have access to tools for blockchain operations.
 When a user requests blockchain operations, use the appropriate tools with the correct parameters.
 Extract all necessary parameters from the user's request.
 Always use the exact tool name and parameter structure expected.`;
@@ -132,17 +154,25 @@ Always use the exact tool name and parameter structure expected.`;
 
 export function getToolCallFromResult(result: any, stepIndex: number = 0): any {
   if (!result.intermediateSteps || result.intermediateSteps.length === 0) {
-    throw new Error('No intermediate steps found in result. Make sure returnIntermediateSteps is enabled.');
+    throw new Error(
+      'No intermediate steps found in result. Make sure returnIntermediateSteps is enabled.',
+    );
   }
 
   if (stepIndex >= result.intermediateSteps.length) {
-    throw new Error(`Step index ${stepIndex} is out of bounds. Only ${result.intermediateSteps.length} steps available.`);
+    throw new Error(
+      `Step index ${stepIndex} is out of bounds. Only ${result.intermediateSteps.length} steps available.`,
+    );
   }
 
   return result.intermediateSteps[stepIndex];
 }
 
-export function expectToolCall(toolCall: any, expectedTool: string, expectedInputValidator?: (input: any) => void): void {
+export function expectToolCall(
+  toolCall: any,
+  expectedTool: string,
+  expectedInputValidator?: (input: any) => void,
+): void {
   expect(toolCall).toBeDefined();
   expect(toolCall.action).toBeDefined();
   expect(toolCall.action.tool).toBe(expectedTool);

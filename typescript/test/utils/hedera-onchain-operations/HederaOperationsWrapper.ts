@@ -26,7 +26,7 @@ import {
 } from '@hashgraph/sdk';
 import BigNumber from 'bignumber.js';
 
-class HederaTestOps {
+class HederaOperationsWrapper {
   constructor(private client: Client) {}
 
   // ACCOUNT OPERATIONS
@@ -297,4 +297,4 @@ class HederaTestOps {
   }
 }
 
-export default HederaTestOps;
+export default HederaOperationsWrapper;

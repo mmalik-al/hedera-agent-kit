@@ -1,9 +1,7 @@
-import HederaTestOps from './hedera-onchain-operations/HederaTestOps';
+import HederaOperationsWrapper from './hedera-onchain-operations/HederaOperationsWrapper';
 import { toDisplayUnit } from '@/shared/hedera-utils/decimals-utils';
 import { expect } from 'vitest';
 import BigNumber from 'bignumber.js';
-
-export const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Helper function to verify balance changes
 // Note: HBAR has 8 decimal places
@@ -11,10 +9,10 @@ export async function verifyHbarBalanceChange(
   accountId: string,
   balanceBeforeRaw: BigNumber,
   expectedChange: number,
-  hederaTestOps: HederaTestOps,
+  hederaOperationsWrapper: HederaOperationsWrapper,
 ): Promise<void> {
   const balanceBefore = toDisplayUnit(balanceBeforeRaw, 8); // HBAR has 8 decimal places
-  const balanceAfter = toDisplayUnit(await hederaTestOps.getAccountHbarBalance(accountId), 8);
+  const balanceAfter = toDisplayUnit(await hederaOperationsWrapper.getAccountHbarBalance(accountId), 8);
 
   const expectedBalance = balanceBefore.plus(new BigNumber(expectedChange));
 
