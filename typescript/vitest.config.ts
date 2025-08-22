@@ -1,7 +1,15 @@
 import { defineConfig } from 'vitest/config'
-import * as path from 'node:path'
+import * as path from 'node:path';
+import * as dotenv from 'dotenv';
+
+dotenv.config({ path: path.resolve(__dirname, '.env.test.local') })
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    },
+  },
   test: {
     environment: 'node',
     include: [
@@ -25,5 +33,12 @@ export default defineConfig({
       enabled: false,
     },
     setupFiles: [],
+    testTimeout: 60000,
+    fileParallelism: false,
+    poolOptions: {
+      threads: {
+        singleThread: true,   // run in a single thread
+      },
+    },
   },
 })
