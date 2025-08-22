@@ -1,39 +1,11 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { Client, PrivateKey, AccountId, LedgerId } from '@hashgraph/sdk';
+import { Client, PrivateKey, AccountId } from '@hashgraph/sdk';
 import { z } from 'zod';
-import BigNumber from 'bignumber.js';
 import transferHbarTool from '@/plugins/core-account-plugin/tools/account/transfer-hbar';
 import { transferHbarParameters } from '@/shared/parameter-schemas/has.zod';
 import { Context, AgentMode } from '@/shared/configuration';
 import HederaTestOps from '../../utils/hedera-onchain-operations/HederaTestOps';
-import {
-  HederaMirrornodeServiceDefaultImpl
-} from '@/shared/hedera-utils/mirrornode/hedera-mirrornode-service-default-impl';
-import { IHederaMirrornodeService } from '@/shared/hedera-utils/mirrornode/hedera-mirrornode-service.interface';
-import { wait } from '../../utils/uitls';
-import { toDisplayUnit } from '@/shared/hedera-utils/decimals-utils';
-
-// Helper function to verify balance changes
-// Note: HBAR has 8 decimal places
-async function verifyBalanceChange(
-  accountId: string,
-  balanceBeforeRaw: BigNumber,
-  expectedChange: number,
-  mirrorNodeService: IHederaMirrornodeService
-): Promise<void> {
-  // Convert raw balance to display units (HBAR with 8 decimals) using BigNumber
-  const balanceBefore = toDisplayUnit(balanceBeforeRaw, 8);
-  const balanceAfterRaw = await mirrorNodeService.getAccountHBarBalance(accountId);
-  const balanceAfter = toDisplayUnit(balanceAfterRaw, 8);
-
-  // Use BigNumber arithmetic to avoid floating-point precision issues
-  const expectedBalance = balanceBefore.plus(new BigNumber(expectedChange));
-
-  console.log(`Verifying balance change for account ${accountId}. It was ${balanceBefore.toString()} HBAR before, should be ${expectedBalance.toString()} HBAR after. Fetched balance is ${balanceAfter.toString()} HBAR.`);
-
-  // Use BigNumber comparison with proper decimal precision (8 places for HBAR)
-  expect(balanceAfter.decimalPlaces(8).isEqualTo(expectedBalance.decimalPlaces(8))).toBe(true);
-}
+import { verifyHbarBalanceChange, wait } from '../../utils/uitls';
 
 describe('Transfer HBAR Integration Tests', () => {
   let client: Client;
@@ -41,7 +13,7 @@ describe('Transfer HBAR Integration Tests', () => {
   let operatorAccountId: AccountId;
   let recipientAccountId: string;
   let recipientAccountId2: string;
-  let mirrorNodeService: IHederaMirrornodeService;
+  let hederaTestOps: HederaTestOps;
 
   beforeAll(async () => {
     // Initialize Hedera client using the same pattern as examples
@@ -56,9 +28,7 @@ describe('Transfer HBAR Integration Tests', () => {
     const privateKey = PrivateKey.fromStringDer(operatorKey); // TODO: support other key formats
 
     client = Client.forTestnet().setOperator(operatorAccountId, privateKey);
-    mirrorNodeService = new HederaMirrornodeServiceDefaultImpl(LedgerId.TESTNET); // hardcoded testnet
-
-    const hederaTestOps = new HederaTestOps(client);
+    hederaTestOps = new HederaTestOps(client);
 
     recipientAccountId = await hederaTestOps
       .createAccount({ publicKey: client.operatorPublicKey!.toStringDer() })
@@ -84,7 +54,7 @@ describe('Transfer HBAR Integration Tests', () => {
 
   describe('Valid Transfer Scenarios', () => {
     it('should successfully transfer HBAR to a single recipient', async () => {
-      const balanceBefore = await mirrorNodeService.getAccountHBarBalance(recipientAccountId);
+      const balanceBefore = await hederaTestOps.getAccountHbarBalance(recipientAccountId);
       const amountToTransfer = 0.1; // 0.1 HBAR
 
       const params: z.infer<ReturnType<typeof transferHbarParameters>> = {
@@ -108,12 +78,17 @@ describe('Transfer HBAR Integration Tests', () => {
 
       // Verify balance change using the helper function
       await wait(3000); // wait for balance changes to be reflected in mirrornode
-      await verifyBalanceChange(recipientAccountId, balanceBefore, amountToTransfer, mirrorNodeService);
+      await verifyHbarBalanceChange(
+        recipientAccountId,
+        balanceBefore.toBigNumber(),
+        amountToTransfer,
+        hederaTestOps,
+      );
     });
 
     it('should successfully transfer HBAR to multiple recipients', async () => {
-      const balanceBefore1 = await mirrorNodeService.getAccountHBarBalance(recipientAccountId);
-      const balanceBefore2 = await mirrorNodeService.getAccountHBarBalance(recipientAccountId2);
+      const balanceBefore1 = await hederaTestOps.getAccountHbarBalance(recipientAccountId);
+      const balanceBefore2 = await hederaTestOps.getAccountHbarBalance(recipientAccountId2);
 
       const params: z.infer<ReturnType<typeof transferHbarParameters>> = {
         transfers: [
@@ -139,12 +114,12 @@ describe('Transfer HBAR Integration Tests', () => {
 
       // Verify balance changes for both recipients
       await wait(3000); // wait for balance changes to be reflected in mirrornode
-      await verifyBalanceChange(recipientAccountId, balanceBefore1, 0.05, mirrorNodeService);
-      await verifyBalanceChange(recipientAccountId2, balanceBefore2, 0.05, mirrorNodeService);
+      await verifyHbarBalanceChange(recipientAccountId, balanceBefore1.toBigNumber(), 0.05, hederaTestOps);
+      await verifyHbarBalanceChange(recipientAccountId2, balanceBefore2.toBigNumber(), 0.05, hederaTestOps);
     });
 
     it('should successfully transfer with explicit source account', async () => {
-      const balanceBefore = await mirrorNodeService.getAccountHBarBalance(recipientAccountId);
+      const balanceBefore = await hederaTestOps.getAccountHbarBalance(recipientAccountId);
 
       const params: z.infer<ReturnType<typeof transferHbarParameters>> = {
         transfers: [
@@ -167,11 +142,11 @@ describe('Transfer HBAR Integration Tests', () => {
 
       // Verify balance change
       await wait(3000); // wait for balance changes to be reflected in mirrornode
-      await verifyBalanceChange(recipientAccountId, balanceBefore, 0.1, mirrorNodeService);
+      await verifyHbarBalanceChange(recipientAccountId, balanceBefore.toBigNumber(), 0.1, hederaTestOps);
     });
 
     it('should successfully transfer without memo', async () => {
-      const balanceBefore = await mirrorNodeService.getAccountHBarBalance(recipientAccountId);
+      const balanceBefore = await hederaTestOps.getAccountHbarBalance(recipientAccountId);
 
       const params: z.infer<ReturnType<typeof transferHbarParameters>> = {
         transfers: [
@@ -192,7 +167,7 @@ describe('Transfer HBAR Integration Tests', () => {
 
       // Verify balance change
       await wait(3000); // wait for balance changes to be reflected in mirrornode
-      await verifyBalanceChange(recipientAccountId, balanceBefore, 0.05, mirrorNodeService);
+      await verifyHbarBalanceChange(recipientAccountId, balanceBefore.toBigNumber(), 0.05, hederaTestOps);
     });
   });
 
@@ -272,7 +247,7 @@ describe('Transfer HBAR Integration Tests', () => {
 
   describe('Edge Cases', () => {
     it('should handle very small amounts (1 tinybar equivalent)', async () => {
-      const balanceBefore = await mirrorNodeService.getAccountHBarBalance(recipientAccountId);
+      const balanceBefore = await hederaTestOps.getAccountHbarBalance(recipientAccountId);
       const amountToTransfer = 0.00000001; // 1 tinybar
 
       const params: z.infer<ReturnType<typeof transferHbarParameters>> = {
@@ -295,11 +270,16 @@ describe('Transfer HBAR Integration Tests', () => {
 
       // Verify balance change
       await wait(3000); // wait for balance changes to be reflected in mirrornode
-      await verifyBalanceChange(recipientAccountId, balanceBefore, amountToTransfer, mirrorNodeService);
+      await verifyHbarBalanceChange(
+        recipientAccountId,
+        balanceBefore.toBigNumber(),
+        amountToTransfer,
+        hederaTestOps,
+      );
     });
 
     it('should handle long memo strings', async () => {
-      const balanceBefore = await mirrorNodeService.getAccountHBarBalance(recipientAccountId);
+      const balanceBefore = await hederaTestOps.getAccountHbarBalance(recipientAccountId);
       const longMemo = 'A'.repeat(90); // Close to 100 char limit for memos
       const amountToTransfer = 0.01;
 
@@ -323,11 +303,16 @@ describe('Transfer HBAR Integration Tests', () => {
 
       // Verify balance change
       await wait(3000); // wait for balance changes to be reflected in mirrornode
-      await verifyBalanceChange(recipientAccountId, balanceBefore, amountToTransfer, mirrorNodeService);
+      await verifyHbarBalanceChange(
+        recipientAccountId,
+        balanceBefore.toBigNumber(),
+        amountToTransfer,
+        hederaTestOps,
+      );
     });
 
     it('should handle maximum number of transfers in a single transaction', async () => {
-      const balanceBefore = await mirrorNodeService.getAccountHBarBalance(recipientAccountId);
+      const balanceBefore = await hederaTestOps.getAccountHbarBalance(recipientAccountId);
       const transferAmount = 0.001;
       const transferCount = 10;
       const totalAmount = transferAmount * transferCount;
@@ -355,7 +340,7 @@ describe('Transfer HBAR Integration Tests', () => {
 
       // Verify total balance change
       await wait(3000); // wait for balance changes to be reflected in mirrornode
-      await verifyBalanceChange(recipientAccountId, balanceBefore, totalAmount, mirrorNodeService);
+      await verifyHbarBalanceChange(recipientAccountId, balanceBefore.toBigNumber(), totalAmount, hederaTestOps);
     });
   });
 });
