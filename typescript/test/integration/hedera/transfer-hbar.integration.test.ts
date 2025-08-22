@@ -5,9 +5,18 @@ import transferHbarTool from '@/plugins/core-account-plugin/tools/account/transf
 import { transferHbarParameters } from '@/shared/parameter-schemas/has.zod';
 import { Context, AgentMode } from '@/shared/configuration';
 import HederaTestOps from '../../utils/hedera-onchain-operations/HederaTestOps';
-import { verifyHbarBalanceChange, wait } from '../../utils/uitls';
+import { verifyHbarBalanceChange } from '../../utils/uitls';
 
-describe('Transfer HBAR Integration Tests', () => {
+// Zod schema for environment validation
+const envSchema = z.object({
+  ACCOUNT_ID: z
+    .string()
+    .min(1, 'ACCOUNT_ID is required')
+    .regex(/^0\.0\.\d+$/, 'ACCOUNT_ID must be in format 0.0.12345'),
+  PRIVATE_KEY: z.string().min(1, 'PRIVATE_KEY is required'),
+});
+
+describe.sequential('Transfer HBAR Integration Tests', () => {
   let client: Client;
   let context: Context;
   let operatorAccountId: AccountId;
@@ -16,16 +25,15 @@ describe('Transfer HBAR Integration Tests', () => {
   let hederaTestOps: HederaTestOps;
 
   beforeAll(async () => {
-    // Initialize Hedera client using the same pattern as examples
-    const operatorId = process.env.ACCOUNT_ID;
-    const operatorKey = process.env.PRIVATE_KEY;
+    // Validate environment variables with Zod
+    const env = envSchema.parse({
+      ACCOUNT_ID: process.env.ACCOUNT_ID,
+      PRIVATE_KEY: process.env.PRIVATE_KEY,
+    });
 
-    if (!operatorId || !operatorKey) {
-      throw new Error('ACCOUNT_ID and PRIVATE_KEY must be set.');
-    }
-
-    operatorAccountId = AccountId.fromString(operatorId);
-    const privateKey = PrivateKey.fromStringDer(operatorKey); // TODO: support other key formats
+    // Initialize Hedera client
+    operatorAccountId = AccountId.fromString(env.ACCOUNT_ID);
+    const privateKey = PrivateKey.fromStringDer(env.PRIVATE_KEY);
 
     client = Client.forTestnet().setOperator(operatorAccountId, privateKey);
     hederaTestOps = new HederaTestOps(client);
@@ -37,8 +45,6 @@ describe('Transfer HBAR Integration Tests', () => {
     recipientAccountId2 = await hederaTestOps
       .createAccount({ publicKey: client.operatorPublicKey!.toStringDer() })
       .then(accountId => accountId.toString());
-
-    await wait(3000);
 
     context = {
       mode: AgentMode.AUTONOMOUS,
@@ -52,8 +58,8 @@ describe('Transfer HBAR Integration Tests', () => {
     }
   });
 
-  describe('Valid Transfer Scenarios', () => {
-    it('should successfully transfer HBAR to a single recipient', async () => {
+  describe.sequential('Valid Transfer Scenarios', () => {
+    it.sequential('should successfully transfer HBAR to a single recipient', async () => {
       const balanceBefore = await hederaTestOps.getAccountHbarBalance(recipientAccountId);
       const amountToTransfer = 0.1; // 0.1 HBAR
 
@@ -77,16 +83,15 @@ describe('Transfer HBAR Integration Tests', () => {
       expect(result.raw.transactionId).toBeDefined();
 
       // Verify balance change using the helper function
-      await wait(3000); // wait for balance changes to be reflected in mirrornode
       await verifyHbarBalanceChange(
         recipientAccountId,
-        balanceBefore.toBigNumber(),
+        balanceBefore,
         amountToTransfer,
         hederaTestOps,
       );
     });
 
-    it('should successfully transfer HBAR to multiple recipients', async () => {
+    it.sequential('should successfully transfer HBAR to multiple recipients', async () => {
       const balanceBefore1 = await hederaTestOps.getAccountHbarBalance(recipientAccountId);
       const balanceBefore2 = await hederaTestOps.getAccountHbarBalance(recipientAccountId2);
 
@@ -113,12 +118,11 @@ describe('Transfer HBAR Integration Tests', () => {
       expect(result.raw.transactionId).toBeDefined();
 
       // Verify balance changes for both recipients
-      await wait(3000); // wait for balance changes to be reflected in mirrornode
-      await verifyHbarBalanceChange(recipientAccountId, balanceBefore1.toBigNumber(), 0.05, hederaTestOps);
-      await verifyHbarBalanceChange(recipientAccountId2, balanceBefore2.toBigNumber(), 0.05, hederaTestOps);
+      await verifyHbarBalanceChange(recipientAccountId, balanceBefore1, 0.05, hederaTestOps);
+      await verifyHbarBalanceChange(recipientAccountId2, balanceBefore2, 0.05, hederaTestOps);
     });
 
-    it('should successfully transfer with explicit source account', async () => {
+    it.sequential('should successfully transfer with explicit source account', async () => {
       const balanceBefore = await hederaTestOps.getAccountHbarBalance(recipientAccountId);
 
       const params: z.infer<ReturnType<typeof transferHbarParameters>> = {
@@ -141,11 +145,10 @@ describe('Transfer HBAR Integration Tests', () => {
       expect(result.raw.transactionId).toBeDefined();
 
       // Verify balance change
-      await wait(3000); // wait for balance changes to be reflected in mirrornode
-      await verifyHbarBalanceChange(recipientAccountId, balanceBefore.toBigNumber(), 0.1, hederaTestOps);
+      await verifyHbarBalanceChange(recipientAccountId, balanceBefore, 0.1, hederaTestOps);
     });
 
-    it('should successfully transfer without memo', async () => {
+    it.sequential('should successfully transfer without memo', async () => {
       const balanceBefore = await hederaTestOps.getAccountHbarBalance(recipientAccountId);
 
       const params: z.infer<ReturnType<typeof transferHbarParameters>> = {
@@ -166,12 +169,11 @@ describe('Transfer HBAR Integration Tests', () => {
       expect(result.raw.transactionId).toBeDefined();
 
       // Verify balance change
-      await wait(3000); // wait for balance changes to be reflected in mirrornode
-      await verifyHbarBalanceChange(recipientAccountId, balanceBefore.toBigNumber(), 0.05, hederaTestOps);
+      await verifyHbarBalanceChange(recipientAccountId, balanceBefore, 0.05, hederaTestOps);
     });
   });
 
-  describe('Invalid Transfer Scenarios', () => {
+  describe.sequential('Invalid Transfer Scenarios', () => {
     it('should fail with zero amount transfer', async () => {
       const params: z.infer<ReturnType<typeof transferHbarParameters>> = {
         transfers: [
@@ -245,7 +247,7 @@ describe('Transfer HBAR Integration Tests', () => {
     });
   });
 
-  describe('Edge Cases', () => {
+  describe.sequential('Edge Cases', () => {
     it('should handle very small amounts (1 tinybar equivalent)', async () => {
       const balanceBefore = await hederaTestOps.getAccountHbarBalance(recipientAccountId);
       const amountToTransfer = 0.00000001; // 1 tinybar
@@ -269,10 +271,9 @@ describe('Transfer HBAR Integration Tests', () => {
       expect(result.raw.transactionId).toBeDefined();
 
       // Verify balance change
-      await wait(3000); // wait for balance changes to be reflected in mirrornode
       await verifyHbarBalanceChange(
         recipientAccountId,
-        balanceBefore.toBigNumber(),
+        balanceBefore,
         amountToTransfer,
         hederaTestOps,
       );
@@ -302,10 +303,9 @@ describe('Transfer HBAR Integration Tests', () => {
       expect(result.raw.transactionId).toBeDefined();
 
       // Verify balance change
-      await wait(3000); // wait for balance changes to be reflected in mirrornode
       await verifyHbarBalanceChange(
         recipientAccountId,
-        balanceBefore.toBigNumber(),
+        balanceBefore,
         amountToTransfer,
         hederaTestOps,
       );
@@ -339,8 +339,7 @@ describe('Transfer HBAR Integration Tests', () => {
       expect(result.raw.transactionId).toBeDefined();
 
       // Verify total balance change
-      await wait(3000); // wait for balance changes to be reflected in mirrornode
-      await verifyHbarBalanceChange(recipientAccountId, balanceBefore.toBigNumber(), totalAmount, hederaTestOps);
+      await verifyHbarBalanceChange(recipientAccountId, balanceBefore, totalAmount, hederaTestOps);
     });
   });
 });

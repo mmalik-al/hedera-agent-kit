@@ -35,10 +35,11 @@ export default defineConfig({
     setupFiles: [],
     testTimeout: 60000,
     fileParallelism: false,
+    pool: 'forks',
     poolOptions: {
-      threads: {
-        singleThread: true,   // run in a single thread
-      },
+      forks: {
+        singleFork: true
+      }
     },
   },
 })

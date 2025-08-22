@@ -13,7 +13,8 @@ import {
   TokenCreateTransaction,
   TokenDeleteTransaction,
   TokenId,
-  TokenInfoQuery, TokenNftInfoQuery,
+  TokenInfoQuery,
+  TokenNftInfoQuery,
   TokenSupplyType,
   TokenType,
   TopicCreateTransaction,
@@ -23,6 +24,7 @@ import {
   TopicMessageSubmitTransaction,
   TransferTransaction,
 } from '@hashgraph/sdk';
+import BigNumber from 'bignumber.js';
 
 class HederaTestOps {
   constructor(private client: Client) {}
@@ -271,21 +273,27 @@ class HederaTestOps {
   }
 
   async getNftInfo(tokenId: string, serial: number) {
-    const query = new TokenNftInfoQuery({nftId: new NftId(TokenId.fromString(tokenId), serial)})
+    const query = new TokenNftInfoQuery({ nftId: new NftId(TokenId.fromString(tokenId), serial) });
     return await query.execute(this.client);
   }
 
   async getAccountTokenBalances(accountId: string, tokenId: string) {
     const accountTokenBalances = await this.getAccountBalances(accountId);
     const tokenIdObj = TokenId.fromString(tokenId);
-    const balance =  accountTokenBalances.tokens?.get(tokenIdObj) ?? 0;
+    const balance = accountTokenBalances.tokens?.get(tokenIdObj) ?? 0;
     const decimals = accountTokenBalances.tokenDecimals?.get(tokenIdObj) ?? 0;
     return { balance, decimals };
   }
 
-  async getAccountHbarBalance(accountId: string) {
+  /**
+   * return HBAR balance of an account in tinybars
+   *
+   * @param accountId
+   */
+  async getAccountHbarBalance(accountId: string): Promise<BigNumber> {
     const accountInfo = await this.getAccountInfo(accountId);
-    return accountInfo.balance;
+    const balance = accountInfo.balance;
+    return new BigNumber(balance.toTinybars().toNumber());
   }
 }
 
