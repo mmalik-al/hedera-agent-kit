@@ -42,6 +42,11 @@ async function bootstrap(): Promise<void> {
     GET_TOKEN_INFO_QUERY_TOOL,
   } = coreQueriesPluginToolNames;
 
+  const { 
+    DELETE_ACCOUNT_TOOL, 
+    TRANSFER_HBAR_TOOL,
+    UPDATE_ACCOUNT_TOOL,
+  } = coreAccountPluginToolNames;
 
   const { UPDATE_ACCOUNT_TOOL } = coreAccountPluginToolNames;
 
@@ -55,6 +60,8 @@ async function bootstrap(): Promise<void> {
         SUBMIT_TOPIC_MESSAGE_TOOL,
         CREATE_FUNGIBLE_TOKEN_TOOL,
         GET_HBAR_BALANCE_QUERY_TOOL,
+        DELETE_ACCOUNT_TOOL,
+        TRANSFER_HBAR_TOOL,
         UPDATE_ACCOUNT_TOOL,
         GET_TOKEN_INFO_QUERY_TOOL,
         // Plugin tools

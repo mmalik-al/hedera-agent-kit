@@ -10,6 +10,9 @@ import {
   mintNonFungibleTokenParameters,
 } from '@/shared/parameter-schemas/hts.zod';
 import {
+  deleteAccountParameters,
+  deleteAccountParametersNormalised,
+  transferHbarParameters,
   transferHbarParameters,
   updateAccountParameters,
   updateAccountParametersNormalised,
@@ -431,6 +434,27 @@ export default class HederaParameterNormaliser {
     };
   }
 
+
+  static normaliseDeleteAccount(
+    params: z.infer<ReturnType<typeof deleteAccountParameters>>,
+    context: Context,
+    client: Client,
+  ): z.infer<ReturnType<typeof deleteAccountParametersNormalised>> {
+    if (!AccountResolver.isHederaAddress(params.accountId)) {
+      throw new Error('Account ID must be a Hedera address');
+    }
+
+    // if no transfer account ID is provided, use the operator account ID
+    if (!params.transferAccountId) {
+      params.transferAccountId = AccountResolver.getDefaultAccount(context, client);
+    }
+
+    return {
+      accountId: AccountId.fromString(params.accountId),
+      transferAccountId: AccountId.fromString(params.transferAccountId),
+    };
+  }
+  
   static normaliseUpdateAccount(
     params: z.infer<ReturnType<typeof updateAccountParameters>>,
     context: Context,

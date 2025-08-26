@@ -32,6 +32,7 @@ This plugin provides tools for Hedera Account Service operations
 |-----------------------|--------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `TRANSFER_HBAR_TOOL`  | Transfer HBAR between accounts | Provide the amount of of HBAR to transfer, the account to transfer to, and optionally, a transaction memo.                                                                                                                                         |
 | `UPDATE_ACCOUNT_TOOL` | Update an account's metadata   | Provide the account ID to update (required), the max automatic token associations (number, optional), id of account to staked to (string, optional), account memo (string, optional) and if staking rewards should be declined (boolean, optional) |
+| `DELETE_ACCOUNT_TOOL`| Delete an account and send all remaining assets to a specified account | Provide the ID of account to delete (required) and the transfer account ID to send the remaining assets to (optional). If transfer account is not specified the operator's account ID will be used |
 
 ### Core Hedera Consensus Service Plugin Tools (core-consensus-plugin)
 
