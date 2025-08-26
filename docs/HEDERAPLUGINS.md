@@ -37,9 +37,10 @@ This plugin provides tools for Hedera Account Service operations
 ### Core Hedera Consensus Service Plugin Tools (core-consensus-plugin)
 
 | Tool Name                   | Description                                       | Usage                                                                                                                                             |
-|-----------------------------|---------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| `CREATE_TOPIC_TOOL`         | Create a new topic on the Hedera network          | Optionally provide a topic memo (string) and whether to set a submit key (boolean - set to true if you want to set a submit key, otherwise false) | 
-| `SUBMIT_TOPIC_MESSAGE_TOOL` | Submit a message to a topic on the Hedera network | Provide the topic ID (string, required) and the message to submit (string, required)                                                              | 
+
+| --------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CREATE_TOPIC_TOOL`         | Create a new topic on the Hedera network          | Optionally provide a topic memo (string) and whether to set a submit key (boolean - set to true if you want to set a submit key, otherwise false) |
+| `SUBMIT_TOPIC_MESSAGE_TOOL` | Submit a message to a topic on the Hedera network | Provide the topic ID (string, required) and the message to submit (string, required)                                                              |
 
 ### Core Hedera Token Service Plugin Tools (core-hts-plugin)
 
@@ -120,7 +121,12 @@ and mode (AUTONOMOUS or RETURN_BYTES for human in the loop), as well as the plug
     context: {
       mode: AgentMode.AUTONOMOUS,
     },
-    plugins: [coreHTSPlugin, coreAccountPlugin, coreConsensusPlugin, coreQueriesPlugin],
+    plugins: [
+      coreHTSPlugin,
+      coreAccountPlugin,
+      coreConsensusPlugin,
+      coreQueriesPlugin,
+    ],
   },
 });
-  ```
+```
