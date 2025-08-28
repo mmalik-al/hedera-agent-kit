@@ -8,7 +8,7 @@ import {
   createNonFungibleTokenParametersNormalised,
   mintFungibleTokenParameters,
   mintNonFungibleTokenParameters,
-} from '@/shared/parameter-schemas/hts.zod';
+} from '@/shared/parameter-schemas/token.zod';
 import {
   createAccountParameters,
   createAccountParametersNormalised,
@@ -17,11 +17,11 @@ import {
   transferHbarParameters,
   updateAccountParameters,
   updateAccountParametersNormalised,
-} from '@/shared/parameter-schemas/has.zod';
+} from '@/shared/parameter-schemas/account.zod';
 import {
   createTopicParameters,
   createTopicParametersNormalised,
-} from '@/shared/parameter-schemas/hcs.zod';
+} from '@/shared/parameter-schemas/consensus.zod';
 
 import { AccountId, Client, Hbar, PublicKey, TokenSupplyType, TokenType } from '@hashgraph/sdk';
 import { Context } from '@/shared/configuration';
