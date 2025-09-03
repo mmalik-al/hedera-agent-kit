@@ -56,13 +56,13 @@ export default class HederaParameterNormaliser {
     if (!treasuryAccountId) throw new Error('Must include treasury account ID');
 
     const decimals = params.decimals ?? 0;
-    const initialSupply = toBaseUnit(params.initialSupply ?? 0, decimals);
+    const initialSupply = toBaseUnit(params.initialSupply ?? 0, decimals).toNumber();
 
     const isFinite = (params.supplyType ?? 'infinite') === 'finite';
     const supplyType = isFinite ? TokenSupplyType.Finite : TokenSupplyType.Infinite;
 
     const maxSupply = isFinite
-      ? toBaseUnit(params.maxSupply ?? 1_000_000, decimals) // default finite max supply
+      ? toBaseUnit(params.maxSupply ?? 1_000_000, decimals).toNumber() // default finite max supply
       : undefined;
 
     if (maxSupply !== undefined && initialSupply > maxSupply) {
@@ -177,7 +177,7 @@ export default class HederaParameterNormaliser {
         throw new Error(`Invalid recipient amount: ${recipient.amount}`);
       }
 
-      const amount = Long.fromString(toBaseUnit(amountRaw, tokenDecimals).toString());
+      const amount = Long.fromString(toBaseUnit(amountRaw, tokenDecimals).toNumber().toString());
 
       totalAmount = totalAmount.add(amount);
 
@@ -344,7 +344,7 @@ export default class HederaParameterNormaliser {
   ) {
     const decimals =
       (await mirrorNode.getTokenInfo(params.tokenId).then(r => Number(r.decimals))) ?? 0;
-    const baseAmount = toBaseUnit(params.amount, decimals);
+    const baseAmount = toBaseUnit(params.amount, decimals).toNumber();
     return {
       tokenId: params.tokenId,
       amount: baseAmount,
@@ -474,7 +474,7 @@ export default class HederaParameterNormaliser {
       transferAccountId: AccountId.fromString(params.transferAccountId),
     };
   }
-  
+
   static normaliseUpdateAccount(
     params: z.infer<ReturnType<typeof updateAccountParameters>>,
     context: Context,
