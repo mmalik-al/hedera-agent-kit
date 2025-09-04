@@ -27,6 +27,8 @@ We need a reliable, automated release process that ensures quality, consistency,
 
 We will implement a **comprehensive release process** with the following key components:
 
+> See also: Acceptance criteria for the GitHub Actions implementation in `docs/adr/003-release-process-acceptance-criteria.md` and the list of required GitHub workflows in `docs/adr/003-github-workflows-list.md`.
+
 ### 1. Version Management Strategy
 
 #### Semantic Versioning
