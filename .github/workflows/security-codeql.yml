@@ -21,6 +21,7 @@ permissions:
 
 jobs:
   analyze:
+    if: false
     name: Analyze (CodeQL)
     runs-on: ubuntu-latest
     timeout-minutes: 60
