@@ -39,4 +39,4 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         working-directory: typescript
-        run: npm run test:tool-calling -- --llm=gpt-4
+        run: npm run test
