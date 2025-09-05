@@ -14,18 +14,18 @@ jobs:
   unit-tests:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup and install
-        uses: ./.github/actions/setup-and-install
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run unit tests
+        uses: ./.github/actions/run-unit-tests
         with:
           node-version: '20'
-
-      - name: Run unit tests
-        working-directory: typescript
-        run: npm run test:unit
 
   integration-tests:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Setup and install
         uses: ./.github/actions/setup-and-install
         with:

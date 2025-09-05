@@ -1,5 +1,5 @@
 name: "Setup Node and Install (typescript/)"
-description: "Checkout, setup Node with cache, and install dependencies in typescript/"
+description: "Setup Node with cache, and install dependencies in typescript/"
 author: "Hedera Agent Kit CI"
 
 inputs:
@@ -11,9 +11,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
