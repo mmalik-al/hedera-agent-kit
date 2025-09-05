@@ -1,0 +1,58 @@
+name: Security Scan (CodeQL)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'typescript/**'
+      - '.github/workflows/security-codeql.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'typescript/**'
+      - '.github/workflows/security-codeql.yml'
+  schedule:
+    - cron: '0 3 * * 1' # Every Monday at 03:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  analyze:
+    name: Analyze (CodeQL)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          config: ./.github/codeql/codeql-config.yml
+
+      # If the project requires a build for better JS/TS analysis, build the package.
+      # CodeQL auto-build works for many JS/TS projects, but we provide an explicit build for reliability.
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'typescript/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: typescript
+        run: npm ci
+
+      - name: Build (optional but recommended for TS projects)
+        working-directory: typescript
+        run: |
+          npm run build --if-present
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: '/language:javascript'
