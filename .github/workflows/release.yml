@@ -1,0 +1,100 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (no actual release)'
+        required: false
+        default: 'false'
+        type: boolean
+  # Optional scheduled trigger (requires protected environment approval per ADR)
+  # schedule:
+  #   - cron: '0 10 * * 4' # Thursdays at 10:00 UTC
+
+# Ensure only one release runs at a time
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write          # required by semantic-release to push tags/CHANGELOG commits
+  id-token: write          # for npm provenance / OIDC if enabled
+  # pull-requests: write   # uncomment if semantic-release should comment on PRs
+  # issues: write          # uncomment if semantic-release should create issues
+
+env:
+  NODE_VERSION: '20'
+  WORKDIR: typescript
+
+jobs:
+  release:
+    name: Release to NPM (semantic-release)
+    runs-on: ubuntu-latest
+    # Guard: do not run from forks; restrict to this repository
+    if: >-
+      ${{ github.event_name == 'workflow_dispatch' && github.repository_owner == github.actor || github.actor == github.repository_owner }}
+    environment:
+      name: release
+    steps:
+      - name: Checkout repository (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+          cache-dependency-path: '${{ env.WORKDIR }}/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: ${{ env.WORKDIR }}
+        run: npm ci
+
+      - name: Run all tests with multiple LLMs
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        working-directory: ${{ env.WORKDIR }}
+        run: |
+          npm run test:unit
+          npm run test:integration
+          npm run test:tool-calling -- --llm=all
+          npm run test:e2e -- --llm=all
+
+      - name: Build package
+        working-directory: ${{ env.WORKDIR }}
+        run: npm run build
+
+      # Optional sanity check of publish contents
+      - name: Pack (dry-run) to verify contents
+        working-directory: ${{ env.WORKDIR }}
+        run: npm pack --dry-run
+
+      - name: Release (semantic-release)
+        if: ${{ github.event.inputs.dry_run == 'false' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        working-directory: ${{ env.WORKDIR }}
+        run: npx semantic-release
+
+      - name: Semantic-release dry run
+        if: ${{ github.event.inputs.dry_run != 'false' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Intentionally no NODE_AUTH_TOKEN in dry-run
+        working-directory: ${{ env.WORKDIR }}
+        run: npx semantic-release --dry-run
+
+      # Optionally upload artifacts (build, test outputs) for observability
+      - name: Upload dist artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: typescript-dist
+          path: ${{ env.WORKDIR }}/dist
+          if-no-files-found: ignore

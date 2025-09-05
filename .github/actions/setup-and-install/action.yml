@@ -1,0 +1,27 @@
+name: "Setup Node and Install (typescript/)"
+description: "Checkout, setup Node with cache, and install dependencies in typescript/"
+author: "Hedera Agent Kit CI"
+
+inputs:
+  node-version:
+    description: "Node.js version"
+    required: true
+    default: "20"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: 'npm'
+        cache-dependency-path: 'typescript/package-lock.json'
+
+    - name: Install dependencies
+      working-directory: typescript
+      shell: bash
+      run: npm ci
