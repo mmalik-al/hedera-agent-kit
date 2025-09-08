@@ -33,10 +33,10 @@ jobs:
 
       - name: Run integration tests
         working-directory: typescript
-        run: npm run test:integration
+        run: npm run test integration
 
-      - name: Run tool-calling validation tests (single LLM)
+      - name: Run tool-calling E2E tests
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         working-directory: typescript
-        run: npm run test
+        run: npm run test e2e
