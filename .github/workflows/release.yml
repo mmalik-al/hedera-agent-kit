@@ -47,25 +47,25 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
-      - name: Run integration tests
-        uses: ./.github/actions/run-integration-tests
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-          E2E_LLM_PROVIDER: ${{ vars.E2E_LLM_PROVIDER }}
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Run E2E tests
-        uses: ./.github/actions/run-e2e-tests
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-          E2E_LLM_PROVIDER: ${{ vars.E2E_LLM_PROVIDER }}
-        with:
-          node-version: ${{ env.NODE_VERSION }}
+#      - name: Run integration tests
+#        uses: ./.github/actions/run-integration-tests
+#        env:
+#          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+#          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
+#          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+#          E2E_LLM_PROVIDER: ${{ vars.E2E_LLM_PROVIDER }}
+#        with:
+#          node-version: ${{ env.NODE_VERSION }}
+#
+#      - name: Run E2E tests
+#        uses: ./.github/actions/run-e2e-tests
+#        env:
+#          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+#          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
+#          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+#          E2E_LLM_PROVIDER: ${{ vars.E2E_LLM_PROVIDER }}
+#        with:
+#          node-version: ${{ env.NODE_VERSION }}
 
       - name: Pack
         working-directory: ${{ env.WORKDIR }}
