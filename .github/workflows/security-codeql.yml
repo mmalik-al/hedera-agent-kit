@@ -38,7 +38,7 @@ jobs:
       # If the project requires a build for better JS/TS analysis, build the package.
       # CodeQL auto-build works for many JS/TS projects, but we provide an explicit build for reliability.
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'npm'
