@@ -21,15 +21,11 @@ jobs:
         with:
           node-version: '20'
 
-  integration-e2e-tests:
+  integration-tests:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup and install
-        uses: ./.github/actions/setup-and-install
-        with:
-          node-version: '20'
 
       - name: Run integration tests
         working-directory: typescript
@@ -40,6 +36,12 @@ jobs:
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           E2E_LLM_PROVIDER: ${{ vars.E2E_LLM_PROVIDER }}
         run: npm run test integration
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Run tool-calling E2E tests
         env:
