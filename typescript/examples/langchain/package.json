@@ -6,7 +6,8 @@
     "langchain:structured-chat-agent": "tsx structured-chat-agent.ts",
     "langchain:tool-calling-agent": "tsx tool-calling-agent.ts",
     "langchain:return-bytes-tool-calling-agent": "tsx return-bytes-tool-calling-agent.ts",
-    "langchain:plugin-tool-calling-agent": "tsx plugin-tool-calling-agent.ts"
+    "langchain:plugin-tool-calling-agent": "tsx plugin-tool-calling-agent.ts",
+    "some-change": "echo \"Some change\""
   },
   "dependencies": {
     "@hashgraph/sdk": "^2.68.0",
