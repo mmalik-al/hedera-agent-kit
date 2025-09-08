@@ -27,6 +27,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup and install
+        uses: ./.github/actions/setup-and-install
+        with:
+          node-version: '20'
+
       - name: Run integration tests
         working-directory: typescript
         env:
@@ -42,6 +47,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup and install
+        uses: ./.github/actions/setup-and-install
+        with:
+          node-version: '20'
 
       - name: Run tool-calling E2E tests
         env:
