@@ -6,7 +6,7 @@ on:
       dry_run:
         description: 'Dry run (no actual release)'
         required: false
-        default: 'false'
+        default: false
         type: boolean
   # Optional scheduled trigger (requires protected environment approval per ADR)
   # schedule:
@@ -20,7 +20,7 @@ concurrency:
 permissions:
   contents: write          # required by semantic-release to push tags/CHANGELOG commits
   id-token: write          # for npm provenance / OIDC if enabled
-  # pull-requests: write   # uncomment if semantic-release should comment on PRs
+  pull-requests: write   # uncomment if semantic-release should comment on PRs
   # issues: write          # uncomment if semantic-release should create issues
 
 env:
@@ -31,9 +31,6 @@ jobs:
   release:
     name: Release to NPM (semantic-release)
     runs-on: ubuntu-latest
-    # Guard: do not run from forks; restrict to this repository
-    if: >-
-      ${{ github.event_name == 'workflow_dispatch' && github.repository_owner == github.actor || github.actor == github.repository_owner }}
     environment:
       name: release
     steps:
@@ -42,37 +39,27 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup and install
+        uses: ./.github/actions/setup-and-install
+
+      - name: Run unit tests
+        uses: ./.github/actions/run-unit-tests
         with:
           node-version: ${{ env.NODE_VERSION }}
-          registry-url: 'https://registry.npmjs.org'
-          cache: 'npm'
-          cache-dependency-path: '${{ env.WORKDIR }}/package-lock.json'
 
-      - name: Install dependencies
-        working-directory: ${{ env.WORKDIR }}
-        run: npm ci
+      - name: Run integration tests
+        uses: ./.github/actions/run-integration-tests
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
-      - name: Run all tests with multiple LLMs
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        working-directory: ${{ env.WORKDIR }}
-        run: |
-          npm run test:unit
-          npm run test:integration
-          npm run test:tool-calling -- --llm=all
-          npm run test:e2e -- --llm=all
+      - name: Run E2E tests
+        uses: ./.github/actions/run-e2e-tests
+        with:
+          node-version: ${{ env.NODE_VERSION }}
 
-      - name: Build package
-        working-directory: ${{ env.WORKDIR }}
-        run: npm run build
-
-      # Optional sanity check of publish contents
       - name: Pack (dry-run) to verify contents
         working-directory: ${{ env.WORKDIR }}
-        run: npm pack --dry-run
+        run: npm pack
 
       - name: Release (semantic-release)
         if: ${{ github.event.inputs.dry_run == 'false' }}

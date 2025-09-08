@@ -18,47 +18,19 @@ jobs:
         uses: actions/checkout@v4
       - name: Run unit tests
         uses: ./.github/actions/run-unit-tests
-        with:
-          node-version: '20'
 
   integration-tests:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup and install
-        uses: ./.github/actions/setup-and-install
-        with:
-          node-version: '20'
-
       - name: Run integration tests
-        working-directory: typescript
-        env:
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-          E2E_LLM_PROVIDER: ${{ vars.E2E_LLM_PROVIDER }}
-        run: npm run test integration
+        uses: ./.github/actions/run-integration-tests
 
   e2e-tests:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup and install
-        uses: ./.github/actions/setup-and-install
-        with:
-          node-version: '20'
-
       - name: Run tool-calling E2E tests
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-          E2E_LLM_PROVIDER: ${{ vars.E2E_LLM_PROVIDER }}
-        working-directory: typescript
-        run: npm run test e2e
+        uses: ./.github/actions/run-e2e-tests
