@@ -83,6 +83,7 @@ jobs:
         if: ${{ github.event.inputs.dry_run != 'false' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         working-directory: ${{ env.WORKDIR }}
         run: npx semantic-release --dry-run
 
