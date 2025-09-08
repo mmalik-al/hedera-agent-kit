@@ -19,10 +19,4 @@ runs:
     - name: Run integration tests
       working-directory: typescript
       shell: bash
-      env:
-        GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
-        PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-        E2E_LLM_PROVIDER: ${{ vars.E2E_LLM_PROVIDER }}
       run: npm run test integration
