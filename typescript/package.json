@@ -1,5 +1,5 @@
 {
-  "name": "hedera-agent-kit",
+  "name": "mmal-test",
   "version": "3.1.0",
   "description": "Use the Hedera Agent Kit to build agents that can interact with the Hedera network in any framework you like.",
   "exports": {

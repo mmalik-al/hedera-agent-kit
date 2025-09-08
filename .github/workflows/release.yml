@@ -1,0 +1,97 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (no actual release)'
+        required: false
+        default: false
+        type: boolean
+  # Optional scheduled trigger (requires protected environment approval per ADR)
+  # schedule:
+  #   - cron: '0 10 * * 4' # Thursdays at 10:00 UTC
+
+# Ensure only one release runs at a time
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write          # required by semantic-release to push tags/CHANGELOG commits
+  id-token: write          # for npm provenance / OIDC if enabled
+  pull-requests: write   # uncomment if semantic-release should comment on PRs
+  # issues: write          # uncomment if semantic-release should create issues
+
+env:
+  NODE_VERSION: '20'
+  WORKDIR: typescript
+
+jobs:
+  release:
+    name: Release to NPM (semantic-release)
+    runs-on: ubuntu-latest
+    environment:
+      name: release
+    steps:
+      - name: Checkout repository (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup and install
+        uses: ./.github/actions/setup-and-install
+
+      - name: Run unit tests
+        uses: ./.github/actions/run-unit-tests
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Run integration tests
+        uses: ./.github/actions/run-integration-tests
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          E2E_LLM_PROVIDER: ${{ vars.E2E_LLM_PROVIDER }}
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Run E2E tests
+        uses: ./.github/actions/run-e2e-tests
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          E2E_LLM_PROVIDER: ${{ vars.E2E_LLM_PROVIDER }}
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Pack (dry-run) to verify contents
+        working-directory: ${{ env.WORKDIR }}
+        run: npm pack
+
+      - name: Release (semantic-release)
+        if: ${{ github.event.inputs.dry_run == 'false' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        working-directory: ${{ env.WORKDIR }}
+        run: npx semantic-release
+
+      - name: Semantic-release dry run
+        if: ${{ github.event.inputs.dry_run != 'false' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Intentionally no NODE_AUTH_TOKEN in dry-run
+        working-directory: ${{ env.WORKDIR }}
+        run: npx semantic-release --dry-run
+
+      # Optionally upload artifacts (build, test outputs) for observability
+      - name: Upload dist artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: typescript-dist
+          path: ${{ env.WORKDIR }}/dist
+          if-no-files-found: ignore

@@ -1,0 +1,48 @@
+name: PR Tests
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'typescript/**'
+      - '.github/workflows/pr-tests.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run unit tests
+        uses: ./.github/actions/run-unit-tests
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run integration tests
+        uses: ./.github/actions/run-integration-tests
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          E2E_LLM_PROVIDER: ${{ vars.E2E_LLM_PROVIDER }}
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run tool-calling E2E tests
+        uses: ./.github/actions/run-e2e-tests
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          E2E_LLM_PROVIDER: ${{ vars.E2E_LLM_PROVIDER }}

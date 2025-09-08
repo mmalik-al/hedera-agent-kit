@@ -1,0 +1,22 @@
+name: "Run E2E Tests (typescript/)"
+description: "Setup Node, install dependencies, and run E2E tests in typescript/"
+author: "Hedera Agent Kit CI"
+
+inputs:
+  node-version:
+    description: "Node.js version"
+    required: true
+    default: "20"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup and install
+      uses: ./.github/actions/setup-and-install
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Run tool-calling E2E tests
+      working-directory: typescript
+      shell: bash
+      run: npm run test e2e
