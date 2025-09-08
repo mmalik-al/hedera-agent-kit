@@ -69,6 +69,6 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hashgraph/hedera-agent-kit.git"
+    "url": "git+https://github.com/mmalik-al/hedera-agent-kit.git"
   }
 }
