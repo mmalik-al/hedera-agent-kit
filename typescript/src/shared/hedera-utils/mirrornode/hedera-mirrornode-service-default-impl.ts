@@ -67,6 +67,13 @@ export class HederaMirrornodeServiceDefaultImpl implements IHederaMirrornodeServ
     const tokenIdParam = tokenId ? `&token.id=${tokenId}` : '';
     const url = `${this.baseUrl}/accounts/${accountId}/tokens?${tokenIdParam}`;
     const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch balance for an account ${accountId}: ${response.status} ${response.statusText}`,
+      );
+    }
+
     return await response.json();
   }
 
