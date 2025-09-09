@@ -1,0 +1,102 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (no actual release)'
+        required: true
+        default: true
+        type: boolean
+      disallow_major_bump:
+        description: 'Fail if the next release would bump the MAJOR version'
+        required: true
+        default: true
+        type: boolean
+
+# Ensure only one release runs at a time
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write          # required by semantic-release to push tags/CHANGELOG commits
+  id-token: write
+  pull-requests: write
+  # issues: write          # uncomment if semantic-release should create issues
+
+env:
+  NODE_VERSION: '20'
+  WORKDIR: typescript
+
+jobs:
+  release:
+    name: Release to NPM (semantic-release)
+    runs-on: ubuntu-latest
+    environment:
+      name: release
+    steps:
+      - name: Checkout repository (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup and install
+        uses: ./.github/actions/setup-and-install
+
+      - name: Run unit tests
+        uses: ./.github/actions/run-unit-tests
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Run integration tests
+        uses: ./.github/actions/run-integration-tests
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          E2E_LLM_PROVIDER: ${{ vars.E2E_LLM_PROVIDER }}
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Run E2E tests
+        uses: ./.github/actions/run-e2e-tests
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          E2E_LLM_PROVIDER: ${{ vars.E2E_LLM_PROVIDER }}
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Pack
+        working-directory: ${{ env.WORKDIR }}
+        run: npm pack
+
+      - name: Release (semantic-release)
+        if: ${{ github.event.inputs.dry_run == 'false' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # If disallow_major_bump is false, we disable the semantic-release-fail-on-major-bump-env plugin.
+          FAIL_ON_MAJOR_BUMP: ${{ github.event.inputs.disallow_major_bump }}
+        working-directory: ${{ env.WORKDIR }}
+        run: npx semantic-release
+
+      - name: Semantic-release dry run
+        if: ${{ github.event.inputs.dry_run != 'false' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          FAIL_ON_MAJOR_BUMP: ${{ github.event.inputs.disallow_major_bump }}
+        working-directory: ${{ env.WORKDIR }}
+        run: npx semantic-release --dry-run
+
+      # Optionally upload artifacts (build, test outputs) for observability
+      - name: Upload dist artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: typescript-dist
+          path: ${{ env.WORKDIR }}/dist
+          if-no-files-found: ignore

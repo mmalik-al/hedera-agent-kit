@@ -1,0 +1,22 @@
+name: "Run Integration Tests (typescript/)"
+description: "Setup Node, install dependencies, and run integration tests in typescript/"
+author: "Hedera Agent Kit CI"
+
+inputs:
+  node-version:
+    description: "Node.js version"
+    required: true
+    default: "20"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup and install
+      uses: ./.github/actions/setup-and-install
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Run integration tests
+      working-directory: typescript
+      shell: bash
+      run: npm run test integration
