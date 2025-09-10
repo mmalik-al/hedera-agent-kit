@@ -24,7 +24,7 @@ on:
 
 jobs:
   integration-tests:
-    runs-on: hedera-agent-linux-medium
+    runs-on: ubuntu-latest
     env:
       WORKDIR: typescript
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
