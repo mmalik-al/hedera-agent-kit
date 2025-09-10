@@ -1,3 +1,10 @@
+## [4.0.1](https://github.com/mmalik-al/hedera-agent-kit/compare/v4.0.0...v4.0.1) (2025-09-10)
+
+
+### Bug Fixes
+
+* lock deps version ([f7900c8](https://github.com/mmalik-al/hedera-agent-kit/commit/f7900c8ecd9491fa8d279b65092439575070c025))
+
 # 1.0.0 (2025-09-10)
 
 
