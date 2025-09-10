@@ -1,5 +1,5 @@
 {
-  "name": "hedera-agent-kit",
+  "name": "rel-test-mmal",
   "version": "3.1.0",
   "description": "Use the Hedera Agent Kit to build agents that can interact with the Hedera network in any framework you like.",
   "exports": {
@@ -65,20 +65,22 @@
     "@langchain/anthropic": "0.3.26",
     "@semantic-release/changelog": "github:semantic-release/changelog",
     "@semantic-release/git": "github:semantic-release/git",
-    "semantic-release": "24.2.7"
+    "semantic-release": "24.2.7",
+    "semantic-release-fail-on-major-bump": "^1.0.2"
   },
   "files": [
     "dist/**/*"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hashgraph/hedera-agent-kit.git"
+    "url": "git+https://github.com/mmalik-al/hedera-agent-kit.git"
   },
   "release": {
     "branches": [
       "main"
     ],
     "plugins": [
+      "semantic-release-fail-on-major-bump",
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
       "@semantic-release/changelog",
