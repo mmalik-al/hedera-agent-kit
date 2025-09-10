@@ -8,6 +8,11 @@ on:
         required: false
         default: '20'
         type: string
+      workdir:
+        description: Working directory
+        required: false
+        default: 'typescript'
+        type: string
     secrets:
       OPENAI_API_KEY:
         required: true
@@ -37,8 +42,8 @@ jobs:
           cache: npm
           cache-dependency-path: 'typescript/package-lock.json'
       - name: Install dependencies
-        working-directory: ${{ env.WORKDIR }}
+        working-directory: ${{ inputs.workdir }}
         run: npm ci
       - name: Run E2E tests
-        working-directory: ${{ env.WORKDIR }}
+        working-directory: ${{ inputs.workdir }}
         run: npm run test e2e
