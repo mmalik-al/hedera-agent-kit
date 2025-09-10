@@ -8,11 +8,6 @@ on:
         required: true
         default: true
         type: boolean
-      disallow_major_bump:
-        description: 'Fail if the next release would bump the MAJOR version'
-        required: true
-        default: true
-        type: boolean
 
 # Ensure only one release runs at a time
 concurrency:
@@ -31,7 +26,7 @@ env:
 jobs:
   release:
     name: Release to NPM (semantic-release)
-    runs-on: ubuntu-latest
+    runs-on: hedera-agent-linux-medium
     environment:
       name: release
     needs: [ unit-tests, integration-tests, e2e-tests ]
@@ -42,7 +37,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -60,15 +55,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          # If disallow_major_bump is false, we disable the semantic-release-fail-on-major-bump-env plugin.
-          FAIL_ON_MAJOR_BUMP: ${{ github.event.inputs.disallow_major_bump }}
         working-directory: ${{ env.WORKDIR }}
         run: npx semantic-release $([ "${{ github.event.inputs.dry_run }}" = "true" ] && echo --dry-run)
 
       # Optionally upload artifacts (build, test outputs) for observability
       - name: Upload dist artifact
         if: ${{ github.event.inputs.dry_run == 'false' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: typescript-dist
           path: ${{ env.WORKDIR }}/dist

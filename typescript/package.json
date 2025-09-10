@@ -65,8 +65,7 @@
     "@langchain/anthropic": "0.3.26",
     "@semantic-release/changelog": "github:semantic-release/changelog",
     "@semantic-release/git": "github:semantic-release/git",
-    "semantic-release": "24.2.7",
-    "semantic-release-fail-on-major-bump-env": "1.1.1"
+    "semantic-release": "24.2.7"
   },
   "files": [
     "dist/**/*"
@@ -80,7 +79,6 @@
       "main"
     ],
     "plugins": [
-      "semantic-release-fail-on-major-bump-env",
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
       "@semantic-release/changelog",
