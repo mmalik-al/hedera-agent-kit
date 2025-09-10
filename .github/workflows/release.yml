@@ -23,7 +23,6 @@ permissions:
   contents: write          # required by semantic-release to push tags/CHANGELOG commits
   id-token: write
   pull-requests: write
-  # issues: write          # uncomment if semantic-release should create issues
 
 env:
   NODE_VERSION: '20'
@@ -35,68 +34,65 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: release
+    needs: [ unit-tests, integration-tests, e2e-tests ]
     steps:
       - name: Checkout repository (full history)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup and install
-        uses: ./.github/actions/setup-and-install
-
-      - name: Run unit tests
-        uses: ./.github/actions/run-unit-tests
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: 'typescript/package-lock.json'
 
-      - name: Run integration tests
-        uses: ./.github/actions/run-integration-tests
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-          E2E_LLM_PROVIDER: ${{ vars.E2E_LLM_PROVIDER }}
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Run E2E tests
-        uses: ./.github/actions/run-e2e-tests
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
-          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-          E2E_LLM_PROVIDER: ${{ vars.E2E_LLM_PROVIDER }}
-        with:
-          node-version: ${{ env.NODE_VERSION }}
+      - name: Install dependencies
+        working-directory: ${{ env.WORKDIR }}
+        run: npm ci
 
       - name: Pack
         working-directory: ${{ env.WORKDIR }}
         run: npm pack
 
       - name: Release (semantic-release)
-        if: ${{ github.event.inputs.dry_run == 'false' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           # If disallow_major_bump is false, we disable the semantic-release-fail-on-major-bump-env plugin.
           FAIL_ON_MAJOR_BUMP: ${{ github.event.inputs.disallow_major_bump }}
         working-directory: ${{ env.WORKDIR }}
-        run: npx semantic-release
-
-      - name: Semantic-release dry run
-        if: ${{ github.event.inputs.dry_run != 'false' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          FAIL_ON_MAJOR_BUMP: ${{ github.event.inputs.disallow_major_bump }}
-        working-directory: ${{ env.WORKDIR }}
-        run: npx semantic-release --dry-run
+        run: npx semantic-release $([ "${{ github.event.inputs.dry_run }}" = "true" ] && echo --dry-run)
 
       # Optionally upload artifacts (build, test outputs) for observability
       - name: Upload dist artifact
-        if: always()
+        if: ${{ github.event.inputs.dry_run == 'false' }}
         uses: actions/upload-artifact@v4
         with:
           name: typescript-dist
           path: ${{ env.WORKDIR }}/dist
           if-no-files-found: ignore
+
+  unit-tests:
+    uses: ./.github/workflows/run-unit-tests.yml
+    with:
+      node-version: ${{ env.NODE_VERSION }}
+
+  integration-tests:
+    uses: ./.github/workflows/run-integration-tests.yml
+    with:
+      node-version: ${{ env.NODE_VERSION }}
+    secrets:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
+      PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+
+  e2e-tests:
+    uses: ./.github/workflows/run-e2e-tests.yml
+    with:
+      node-version: ${{ env.NODE_VERSION }}
+    secrets:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
+      PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
