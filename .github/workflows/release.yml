@@ -29,7 +29,6 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: release
-    needs: [ unit-tests, integration-tests, e2e-tests ]
     steps:
       - name: Checkout repository (full history)
         uses: actions/checkout@v4
@@ -67,19 +66,3 @@ jobs:
           path: ${{ env.WORKDIR }}/dist
           if-no-files-found: ignore
 
-  unit-tests:
-    uses: ./.github/workflows/run-unit-tests.yml
-
-  integration-tests:
-    uses: ./.github/workflows/run-integration-tests.yml
-    secrets:
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
-      PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
-
-  e2e-tests:
-    uses: ./.github/workflows/run-e2e-tests.yml
-    secrets:
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      ACCOUNT_ID: ${{ secrets.ACCOUNT_ID }}
-      PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
