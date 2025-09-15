@@ -16,6 +16,8 @@ import {
   coreConsensusQueryPluginToolNames,
   coreTransactionQueryPlugin,
   coreTransactionQueryPluginToolNames,
+  coreMiscQueriesPlugin,
+  coreMiscQueriesPluginsToolNames,
   coreEVMPlugin,
   coreEVMPluginToolNames,
 } from '@/plugins';
@@ -53,6 +55,7 @@ const {
 const { GET_TOPIC_MESSAGES_QUERY_TOOL } = coreConsensusQueryPluginToolNames;
 const { GET_TOKEN_INFO_QUERY_TOOL } = coreTokenQueryPluginToolNames;
 const { GET_TRANSACTION_RECORD_QUERY_TOOL } = coreTransactionQueryPluginToolNames;
+const { GET_EXCHANGE_RATE_TOOL } = coreMiscQueriesPluginsToolNames;
 const {
   TRANSFER_ERC721_TOOL,
   MINT_ERC721_TOOL,
@@ -93,6 +96,7 @@ export const TOOLKIT_OPTIONS: LangchainTestOptions = {
     GET_TOPIC_MESSAGES_QUERY_TOOL,
     GET_TOKEN_INFO_QUERY_TOOL,
     GET_TRANSACTION_RECORD_QUERY_TOOL,
+    GET_EXCHANGE_RATE_TOOL,
     SIGN_SCHEDULE_TRANSACTION_TOOL,
     TRANSFER_ERC721_TOOL,
     MINT_ERC721_TOOL,
@@ -108,6 +112,7 @@ export const TOOLKIT_OPTIONS: LangchainTestOptions = {
     coreTokenPlugin,
     coreConsensusPlugin,
     coreTransactionQueryPlugin,
+    coreMiscQueriesPlugin,
     coreEVMPlugin,
   ],
   agentMode: AgentMode.AUTONOMOUS,
