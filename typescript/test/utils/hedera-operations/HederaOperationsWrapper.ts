@@ -42,7 +42,10 @@ import {
 import { ExecuteStrategy, ExecuteStrategyResult } from '@/shared/strategies/tx-mode-strategy';
 import { RawTransactionResponse } from '@/shared/strategies/tx-mode-strategy';
 import { getMirrornodeService } from '@/shared/hedera-utils/mirrornode/hedera-mirrornode-utils';
-import { TopicMessagesResponse } from '@/shared/hedera-utils/mirrornode/types';
+import {
+  TokenAirdropsResponse,
+  TopicMessagesResponse,
+} from '@/shared/hedera-utils/mirrornode/types';
 import { createERC20Parameters } from '@/shared/parameter-schemas/evm.zod';
 import { ERC20_FACTORY_ABI, getERC20FactoryAddress } from '@/shared';
 import HederaParameterNormaliser from '@/shared/hedera-utils/hedera-parameter-normaliser';
@@ -288,6 +291,14 @@ class HederaOperationsWrapper {
       ContractId.fromEvmAddress(0, 0, evmContractAddress),
     );
     return await query.execute(this.client);
+  }
+
+  async getPendingAirdrops(accountId: string): Promise<TokenAirdropsResponse> {
+    return await this.mirrornode.getPendingAirdrops(accountId);
+  }
+
+  async getOutstandingAirdrops(accountId: string): Promise<TokenAirdropsResponse> {
+    return await this.mirrornode.getOutstandingAirdrops(accountId);
   }
 
   async createERC20(params: z.infer<ReturnType<typeof createERC20Parameters>>) {
