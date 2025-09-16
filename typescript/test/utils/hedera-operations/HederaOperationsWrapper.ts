@@ -6,6 +6,9 @@ import {
   ContractId,
   ContractInfo,
   ContractInfoQuery,
+  ContractCreateFlow,
+  ContractFunctionParameters,
+  Hbar,
   LedgerId,
   NftId,
   TokenAssociateTransaction,
@@ -261,6 +264,23 @@ class HederaOperationsWrapper {
     const accountInfo = await this.getAccountInfo(accountId);
     const balance = accountInfo.balance;
     return new BigNumber(balance.toTinybars().toNumber());
+  }
+
+  async deployERC20(bytecode: string) {
+    try {
+      const tx = new ContractCreateFlow().setGas(3_000_000).setBytecode(bytecode);
+
+      const response = await tx.execute(this.client);
+      const receipt = await response.getReceipt(this.client);
+
+      return {
+        contractId: receipt.contractId?.toString(),
+        transactionId: response.transactionId.toString(),
+      };
+    } catch (error) {
+      console.error('[HederaOperationsWrapper] Error deploying ERC20:', error);
+      throw error;
+    }
   }
 
   async getContractInfo(evmContractAddress: `0x${string}`): Promise<ContractInfo> {
