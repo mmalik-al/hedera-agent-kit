@@ -49,13 +49,13 @@ const {
   MINT_NON_FUNGIBLE_TOKEN_TOOL,
   DISSOCIATE_TOKEN_TOOL,
 } = coreTokenPluginToolNames;
-const { CREATE_TOPIC_TOOL, SUBMIT_TOPIC_MESSAGE_TOOL } = coreConsensusPluginToolNames;
+const { CREATE_TOPIC_TOOL, SUBMIT_TOPIC_MESSAGE_TOOL, DELETE_TOPIC_TOOL } =
+  coreConsensusPluginToolNames;
 const {
   GET_ACCOUNT_QUERY_TOOL,
   GET_ACCOUNT_TOKEN_BALANCES_QUERY_TOOL,
   GET_HBAR_BALANCE_QUERY_TOOL,
 } = coreAccountQueryPluginToolNames;
-
 const { GET_TOPIC_MESSAGES_QUERY_TOOL } = coreConsensusQueryPluginToolNames;
 const { GET_TOKEN_INFO_QUERY_TOOL } = coreTokenQueryPluginToolNames;
 const { GET_CONTRACT_INFO_QUERY_TOOL } = coreEVMQueryPluginToolNames;
@@ -88,6 +88,7 @@ export const TOOLKIT_OPTIONS: LangchainTestOptions = {
     CREATE_FUNGIBLE_TOKEN_TOOL,
     CREATE_TOPIC_TOOL,
     SUBMIT_TOPIC_MESSAGE_TOOL,
+    DELETE_TOPIC_TOOL,
     GET_HBAR_BALANCE_QUERY_TOOL,
     CREATE_NON_FUNGIBLE_TOKEN_TOOL,
     CREATE_ACCOUNT_TOOL,

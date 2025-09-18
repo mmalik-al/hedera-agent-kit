@@ -67,6 +67,7 @@ A plugin for **Consensus Service (HCS)**, enabling creation and posting to topic
 |-----------------------------|---------------------------------------------------|-------------------------------------------------------------------------------------|
 | `CREATE_TOPIC_TOOL`         | Create a new topic on the Hedera network          | Optionally provide a topic memo (string) and whether to set a submit key (boolean). |
 | `SUBMIT_TOPIC_MESSAGE_TOOL` | Submit a message to a topic on the Hedera network | Provide the topic ID (required) and the message to submit (required).               |
+| `DELETE_TOPIC_TOOL`         | Delete a topic on the Hedera network              | Provide the topic ID (required)                                                     |
 
 ---
 

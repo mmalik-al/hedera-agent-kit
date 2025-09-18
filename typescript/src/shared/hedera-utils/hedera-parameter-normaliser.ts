@@ -25,6 +25,8 @@ import {
 import {
   createTopicParameters,
   createTopicParametersNormalised,
+  deleteTopicParameters,
+  deleteTopicParametersNormalised,
 } from '@/shared/parameter-schemas/consensus.zod';
 
 import {
@@ -304,6 +306,20 @@ export default class HederaParameterNormaliser {
     }
 
     return normalised;
+  }
+
+  static normaliseDeleteTopic(
+    params: z.infer<ReturnType<typeof deleteTopicParameters>>,
+    context: Context,
+    _client: Client,
+    _mirrorNode: IHederaMirrornodeService,
+  ): z.infer<ReturnType<typeof deleteTopicParametersNormalised>> {
+    // First, validate against the basic schema
+    const parsedParams: z.infer<ReturnType<typeof deleteTopicParameters>> =
+      this.parseParamsWithSchema(params, deleteTopicParameters, context);
+
+    // Then, validate against the normalized schema delete topic schema
+    return this.parseParamsWithSchema(parsedParams, deleteTopicParametersNormalised, context);
   }
 
   static async normaliseCreateAccount(
