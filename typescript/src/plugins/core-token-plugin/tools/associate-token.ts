@@ -11,6 +11,7 @@ import { PromptGenerator } from '@/shared/utils/prompt-generator';
 const associateTokenPrompt = (context: Context = {}) => {
   const contextSnippet = PromptGenerator.getContextSnippet(context);
   const usageInstructions = PromptGenerator.getParameterUsageInstructions();
+  const accountToAssociate = PromptGenerator.getAnyAddressParameterDescription('accountId', context);
 
   return `
 ${contextSnippet}
@@ -18,7 +19,7 @@ ${contextSnippet}
 This tool will associate one or more tokens with a Hedera account.
 
 Parameters:
-- accountId (str, optional): The account to associate. Defaults to operator from context
+${accountToAssociate}
 - tokenIds (string[], required): Array of token IDs to associate
 ${usageInstructions}
 

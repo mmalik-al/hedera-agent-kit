@@ -21,6 +21,8 @@ import {
 } from '@hashgraph/sdk';
 import {
   airdropFungibleTokenParametersNormalised,
+  associateTokenParameters,
+  associateTokenParametersNormalised,
   createFungibleTokenParametersNormalised,
   createNonFungibleTokenParametersNormalised,
   deleteTokenParametersNormalised,
@@ -140,7 +142,7 @@ export default class HederaBuilder {
     return new ScheduleDeleteTransaction(params as any);
   }
 
-  static associateToken(params: { accountId: string; tokenIds: string[] }) {
+  static associateToken(params: z.infer<ReturnType<typeof associateTokenParametersNormalised>>) {
     return new TokenAssociateTransaction({
       accountId: AccountId.fromString(params.accountId),
       tokenIds: params.tokenIds.map(t => TokenId.fromString(t)),
