@@ -36,6 +36,10 @@ vi.mock('@/shared/utils/prompt-generator', () => ({
   PromptGenerator: {
     getParameterUsageInstructions: vi.fn(() => 'Usage: Provide the parameters as JSON.'),
     getContextSnippet: vi.fn(() => 'some context'),
+    getAnyAddressParameterDescription: vi.fn(
+      () =>
+        `- accountId (str, optional): The Hedera account ID or EVM address. If not provided, defaults to the operator account`,
+    ),
   },
 }));
 
