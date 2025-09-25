@@ -8,6 +8,7 @@ import {
   TransferTransaction,
   ContractExecuteTransaction,
   TokenMintTransaction,
+  TokenAssociateTransaction,
   AccountCreateTransaction,
   AccountDeleteTransaction,
   AccountUpdateTransaction,
@@ -15,9 +16,13 @@ import {
   ScheduleCreateTransaction,
   ScheduleDeleteTransaction,
   TokenDissociateTransaction,
+  AccountId,
+  TokenId,
 } from '@hashgraph/sdk';
 import {
   airdropFungibleTokenParametersNormalised,
+  associateTokenParameters,
+  associateTokenParametersNormalised,
   createFungibleTokenParametersNormalised,
   createNonFungibleTokenParametersNormalised,
   deleteTokenParametersNormalised,
@@ -141,5 +146,12 @@ export default class HederaBuilder {
     params: z.infer<ReturnType<typeof scheduleDeleteTransactionParameters>>,
   ) {
     return new ScheduleDeleteTransaction(params as any);
+  }
+
+  static associateToken(params: z.infer<ReturnType<typeof associateTokenParametersNormalised>>) {
+    return new TokenAssociateTransaction({
+      accountId: AccountId.fromString(params.accountId),
+      tokenIds: params.tokenIds.map(t => TokenId.fromString(t)),
+    });
   }
 }
