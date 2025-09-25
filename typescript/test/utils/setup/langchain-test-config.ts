@@ -50,7 +50,7 @@ const {
   DISSOCIATE_TOKEN_TOOL,
   ASSOCIATE_TOKEN_TOOL,
 } = coreTokenPluginToolNames;
-const { CREATE_TOPIC_TOOL, SUBMIT_TOPIC_MESSAGE_TOOL, DELETE_TOPIC_TOOL } =
+const { CREATE_TOPIC_TOOL, SUBMIT_TOPIC_MESSAGE_TOOL, DELETE_TOPIC_TOOL, UPDATE_TOPIC_TOOL } =
   coreConsensusPluginToolNames;
 const {
   GET_ACCOUNT_QUERY_TOOL,
@@ -58,8 +58,9 @@ const {
   GET_HBAR_BALANCE_QUERY_TOOL,
 } = coreAccountQueryPluginToolNames;
 
+const { GET_TOPIC_MESSAGES_QUERY_TOOL, GET_TOPIC_INFO_QUERY_TOOL } =
+  coreConsensusQueryPluginToolNames;
 const { GET_TOKEN_INFO_QUERY_TOOL, GET_PENDING_AIRDROP_TOOL } = coreTokenQueryPluginToolNames;
-const { GET_TOPIC_MESSAGES_QUERY_TOOL, GET_TOPIC_INFO_QUERY_TOOL } = coreConsensusQueryPluginToolNames;
 const { GET_CONTRACT_INFO_QUERY_TOOL } = coreEVMQueryPluginToolNames;
 const { GET_TRANSACTION_RECORD_QUERY_TOOL } = coreTransactionQueryPluginToolNames;
 const { GET_EXCHANGE_RATE_TOOL } = coreMiscQueriesPluginsToolNames;
@@ -117,6 +118,7 @@ export const TOOLKIT_OPTIONS: LangchainTestOptions = {
     DISSOCIATE_TOKEN_TOOL,
     SCHEDULE_DELETE_TOOL,
     GET_TOPIC_INFO_QUERY_TOOL,
+    UPDATE_TOPIC_TOOL,
   ],
   plugins: [
     coreAccountPlugin,

@@ -16,6 +16,7 @@ import {
   ScheduleCreateTransaction,
   ScheduleDeleteTransaction,
   TokenDissociateTransaction,
+  TopicUpdateTransaction,
   AccountId,
   TokenId,
 } from '@hashgraph/sdk';
@@ -44,6 +45,7 @@ import {
   createTopicParametersNormalised,
   deleteTopicParametersNormalised,
   submitTopicMessageParametersNormalised,
+  updateTopicParametersNormalised,
 } from '@/shared/parameter-schemas/consensus.zod';
 import { contractExecuteTransactionParametersNormalised } from '@/shared/parameter-schemas/evm.zod';
 
@@ -92,6 +94,10 @@ export default class HederaBuilder {
     const tx = new TopicMessageSubmitTransaction(rest);
     if (transactionMemo) tx.setTransactionMemo(transactionMemo);
     return tx;
+  }
+
+  static updateTopic(params: z.infer<ReturnType<typeof updateTopicParametersNormalised>>) {
+    return new TopicUpdateTransaction(params);
   }
 
   static executeTransaction(
