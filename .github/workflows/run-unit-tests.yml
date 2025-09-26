@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   unit-tests:
-    runs-on: hedera-agent-linux-medium
+    runs-on: ubuntu-latest
     env:
       WORKDIR: typescript
     steps:
