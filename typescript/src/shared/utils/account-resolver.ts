@@ -6,7 +6,7 @@ export class AccountResolver {
   /**
    * Gets the default account based on the agent mode and context.
    * In RETURN_BYTES mode, prefers context.accountId (user's account).
-   * In AUTONOMOUS mode or when no context account, uses operator account.
+   * In AUTONOMOUS mode or when no context account, uses an operator account.
    */
   static getDefaultAccount(context: Context, client: Client): string {
     // Prefer context.accountId (user's account) if it is set

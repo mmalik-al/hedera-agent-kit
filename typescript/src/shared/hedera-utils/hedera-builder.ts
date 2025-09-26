@@ -14,6 +14,7 @@ import {
   AccountUpdateTransaction,
   ScheduleSignTransaction,
   ScheduleCreateTransaction,
+  TokenUpdateTransaction,
   ScheduleDeleteTransaction,
   TokenDissociateTransaction,
   TopicUpdateTransaction,
@@ -30,6 +31,7 @@ import {
   dissociateTokenParametersNormalised,
   mintFungibleTokenParametersNormalised,
   mintNonFungibleTokenParametersNormalised,
+  updateTokenParametersNormalised,
 } from '@/shared/parameter-schemas/token.zod';
 import z from 'zod';
 import {
@@ -78,6 +80,10 @@ export default class HederaBuilder {
     params: z.infer<ReturnType<typeof airdropFungibleTokenParametersNormalised>>,
   ) {
     return new TokenAirdropTransaction(params as any);
+  }
+
+  static updateToken(params: z.infer<ReturnType<typeof updateTokenParametersNormalised>>) {
+    return new TokenUpdateTransaction(params);
   }
 
   static createTopic(params: z.infer<ReturnType<typeof createTopicParametersNormalised>>) {

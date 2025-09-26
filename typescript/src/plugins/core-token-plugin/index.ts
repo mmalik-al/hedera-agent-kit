@@ -15,6 +15,7 @@ import createNonFungibleTokenTool, {
 import mintNonFungibleTokenTool, {
   MINT_NON_FUNGIBLE_TOKEN_TOOL,
 } from '@/plugins/core-token-plugin/tools/non-fungible-token/mint-non-fungible-token';
+import updateTokenTool, { UPDATE_TOKEN_TOOL } from '@/plugins/core-token-plugin/tools/update-token';
 import dissociateTokenTool, {
   DISSOCIATE_TOKEN_TOOL,
 } from '@/plugins/core-token-plugin/tools/dissociate-token';
@@ -33,6 +34,7 @@ export const coreTokenPlugin: Plugin = {
       createNonFungibleTokenTool(context),
       airdropFungibleToken(context),
       mintNonFungibleTokenTool(context),
+      updateTokenTool(context),
       dissociateTokenTool(context),
       associateTokenTool(context),
     ];
@@ -48,6 +50,7 @@ export const coreTokenPluginToolNames = {
   MINT_NON_FUNGIBLE_TOKEN_TOOL,
   DISSOCIATE_TOKEN_TOOL,
   ASSOCIATE_TOKEN_TOOL,
+  UPDATE_TOKEN_TOOL,
 } as const;
 
 export default { coreTokenPlugin, coreTokenPluginToolNames };
